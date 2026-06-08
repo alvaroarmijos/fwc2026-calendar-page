@@ -374,6 +374,72 @@
       max-width: 560px;
     }
 
+    .kickoff-countdown {
+      margin-bottom: 24px;
+      padding: 20px 22px;
+      background:
+        radial-gradient(ellipse 70% 80% at 100% 0%, rgba(201, 162, 39, 0.1), transparent 65%),
+        var(--card-bg);
+      border: 1px solid rgba(201, 162, 39, 0.2);
+      border-radius: var(--radius-card);
+    }
+
+    .kickoff-countdown__label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .kickoff-countdown__match {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    .kickoff-countdown__units {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .kickoff-countdown__unit {
+      flex: 1 1 64px;
+      min-width: 64px;
+      text-align: center;
+      padding: 12px 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    .kickoff-countdown__value {
+      display: block;
+      font-size: clamp(1.5rem, 5vw, 2rem);
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-primary);
+      line-height: 1.1;
+    }
+
+    .kickoff-countdown__unit-label {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    .kickoff-countdown__live {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
     .browse-section--wizard-active {
       margin-top: 72px;
       padding-top: 48px;
@@ -809,6 +875,15 @@
       max-width: 560px;
     }
 
+    .platform-hint ul {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+
+    .platform-hint li + li {
+      margin-top: 6px;
+    }
+
     .wizard-match-count {
       margin: -8px 0 16px;
       font-size: 0.9rem;
@@ -897,11 +972,17 @@
         <div class="section-heading">Step 4 · Add to your calendar</div>
         <div class="wizard-match-count" id="wizard-step4-count"></div>
         <div class="platform-buttons">
-          <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📱 iPhone / iPad / Mac</button>
+          <button class="btn-primary platform-btn" onclick="handlePlatformApple()">📱 iPhone / iPad / Mac</button>
           <button class="btn-primary platform-btn" onclick="handlePlatformGCal()">📅 Google Calendar (import .ics)</button>
           <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📧 Outlook</button>
         </div>
-        <p class="platform-hint">On Android, opens the import dialog in your calendar app. On desktop, downloads the .ics file and opens the Google Calendar import page.</p>
+        <div class="platform-hint">
+          <ul>
+            <li><strong>iPhone / iPad / Mac (Safari):</strong> opens Apple Calendar to import events.</li>
+            <li><strong>Chrome / Firefox:</strong> downloads the .ics file — double-click it to open Calendar.</li>
+            <li><strong>Google Calendar:</strong> downloads the file and opens the import page.</li>
+          </ul>
+        </div>
       </div>
 
     </div>
@@ -913,6 +994,11 @@
     <div id="browse-section" class="browse-section">
       <div class="section-heading browse-section__heading">Browse All Matches</div>
       <p class="browse-section__desc">Explore the full schedule and preview kickoff times. This is separate from the steps above for adding matches to your calendar.</p>
+      <div id="kickoff-countdown" class="kickoff-countdown" aria-live="polite">
+        <div class="kickoff-countdown__label">First match kicks off in</div>
+        <div class="kickoff-countdown__match" id="kickoff-countdown-match"></div>
+        <div class="kickoff-countdown__units" id="kickoff-countdown-timer"></div>
+      </div>
       <div id="match-browser"></div>
     </div>
 
@@ -1060,6 +1146,7 @@
       { label:"Madrid / Paris / Rome (CET)",  value:"Europe/Madrid" },
       { label:"São Paulo (BRT)",              value:"America/Sao_Paulo" },
       { label:"Buenos Aires (ART)",           value:"America/Argentina/Buenos_Aires" },
+      { label:"Montevideo (UYT)",             value:"America/Montevideo" },
       { label:"Tokyo (JST)",                  value:"Asia/Tokyo" },
       { label:"Seoul (KST)",                  value:"Asia/Seoul" },
       { label:"Riyadh (AST)",                 value:"Asia/Riyadh" },
@@ -1074,11 +1161,15 @@
 
     // ── Utilities ──────────────────────────────────────────────────
 
-    function formatMatchTime(m, tz) {
-      const dt = new Date(
+    function matchToDate(m) {
+      return new Date(
         `${m.dateUTC.slice(0,4)}-${m.dateUTC.slice(4,6)}-${m.dateUTC.slice(6,8)}` +
         `T${m.timeUTC.slice(0,2)}:${m.timeUTC.slice(2,4)}:${m.timeUTC.slice(4,6)}Z`
       );
+    }
+
+    function formatMatchTime(m, tz) {
+      const dt = matchToDate(m);
       const date = dt.toLocaleDateString("en-US", { timeZone:tz, month:"short", day:"numeric" });
       const time = dt.toLocaleTimeString("en-US", { timeZone:tz, hour:"numeric", minute:"2-digit" });
       const tzAbbr = dt.toLocaleTimeString("en-US", { timeZone:tz, timeZoneName:"short" }).split(" ").pop();
@@ -1142,6 +1233,14 @@
 
     function isAndroid() {
       return /android/i.test(navigator.userAgent);
+    }
+
+    function isAppleDevice() {
+      const ua = navigator.userAgent;
+      const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      const isMac = /Macintosh/.test(ua) && navigator.maxTouchPoints <= 1;
+      return isIOS || isMac;
     }
 
     function downloadICS(content, filename, { openInCalendar = false } = {}) {
@@ -1405,6 +1504,26 @@
       counter.innerHTML = `Ready to export <strong>${matches.length} ${label}</strong> to your calendar.`;
     }
 
+    function handlePlatformApple() {
+      const matches = getMatchesForScope(matchScope, selectedTeams);
+      const label = matches.length === 1 ? "match" : "matches";
+      const ics = generateICS(matches, "FIFA World Cup 2026");
+      const filename = getICSFilename();
+      if (isAppleDevice()) {
+        downloadICS(ics, filename, { openInCalendar: true });
+        showTooltip(
+          "apple-wizard-tip",
+          `💡 Confirm import in Calendar to add ${matches.length} ${label}.`
+        );
+        return;
+      }
+      downloadICS(ics, filename);
+      showTooltip(
+        "apple-wizard-tip",
+        `💡 Downloaded .ics with ${matches.length} ${label}. Double-click the file to open Calendar.`
+      );
+    }
+
     function handlePlatformDownload() {
       const matches = getMatchesForScope(matchScope, selectedTeams);
       downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
@@ -1568,6 +1687,7 @@
       { label:"CET", value:"Europe/Madrid" },
       { label:"BRT", value:"America/Sao_Paulo" },
       { label:"ART", value:"America/Argentina/Buenos_Aires" },
+      { label:"UYT", value:"America/Montevideo" },
       { label:"JST", value:"Asia/Tokyo" },
     ];
 
@@ -1635,6 +1755,63 @@
         const m = MATCHES.find(x => x.id === el.dataset.matchId);
         if (m) el.textContent = formatMatchTime(m, selectedTZ);
       });
+      updateKickoffCountdown();
+    }
+
+    let kickoffCountdownInterval = null;
+
+    function getFirstMatch() {
+      return MATCHES.reduce((earliest, m) =>
+        !earliest || matchToDate(m) < matchToDate(earliest) ? m : earliest
+      , null);
+    }
+
+    function renderCountdownUnits(days, hours, minutes, seconds) {
+      const pad = n => String(n).padStart(2, "0");
+      const units = [
+        { value: days, label: days === 1 ? "Day" : "Days" },
+        { value: pad(hours), label: "Hours" },
+        { value: pad(minutes), label: "Min" },
+        { value: pad(seconds), label: "Sec" },
+      ];
+      return units.map(u => `
+        <div class="kickoff-countdown__unit">
+          <span class="kickoff-countdown__value">${u.value}</span>
+          <span class="kickoff-countdown__unit-label">${u.label}</span>
+        </div>
+      `).join("");
+    }
+
+    function updateKickoffCountdown() {
+      const first = getFirstMatch();
+      const matchEl = document.getElementById("kickoff-countdown-match");
+      const timerEl = document.getElementById("kickoff-countdown-timer");
+      if (!first || !matchEl || !timerEl) return;
+
+      matchEl.textContent = `${first.homeFlag} ${first.home} vs ${first.away} ${first.awayFlag} · ${formatMatchTime(first, selectedTZ)}`;
+
+      const diff = matchToDate(first) - Date.now();
+      if (diff <= 0) {
+        timerEl.innerHTML = '<span class="kickoff-countdown__live">The tournament has started!</span>';
+        if (kickoffCountdownInterval) {
+          clearInterval(kickoffCountdownInterval);
+          kickoffCountdownInterval = null;
+        }
+        return;
+      }
+
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      timerEl.innerHTML = renderCountdownUnits(days, hours, minutes, seconds);
+    }
+
+    function initKickoffCountdown() {
+      updateKickoffCountdown();
+      if (kickoffCountdownInterval) clearInterval(kickoffCountdownInterval);
+      kickoffCountdownInterval = setInterval(updateKickoffCountdown, 1000);
     }
 
     function initTZBar() {
@@ -1780,6 +1957,7 @@
 
     document.addEventListener("DOMContentLoaded", () => {
       buildMatchBrowser();
+      initKickoffCountdown();
       updateWizardProgress();
       const browseTz = document.getElementById("browse-tz-bar");
       if (browseTz) browseTz.style.display = "none";
