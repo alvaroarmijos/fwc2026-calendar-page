@@ -24,7 +24,7 @@ platform buttons.
 - Step 3: timezone selector — appears on all paths after step 1 or 2
 - Step 4: platform buttons — appears after timezone is set:
   - iPhone / iPad / Mac → .ics download
-  - Google Calendar → calendar.google.com deep-link (first match, same as today)
+  - Google Calendar → .ics download + opens Google Calendar import page
   - Android → .ics download
   - Outlook → .ics download
 - Choosing a different Step 1 option resets steps 2–4 inline without a page reload
@@ -34,7 +34,7 @@ platform buttons.
 ### Not in
 - Modal or overlay UI (inline steps only)
 - Webcal subscription URL
-- Multiple Google Calendar events in one URL (existing limitation stays)
+- Multiple Google Calendar events in one URL (Google has no bulk URL API; .ics import is the bulk path)
 - Changes to the match browser section below the wizard
 - Backend, server, or API of any kind
 - Explicit "Back" button — user re-selects Step 1 to restart
@@ -96,12 +96,13 @@ getMatchesForScope(scope, teams)
 5. **Add Step 4 UI (platform buttons).** Four buttons in a 2×2 grid (2-column
    on desktop, 1-column on mobile):
    - 📱 iPhone / iPad / Mac → `downloadICS(generateICS(...), filename)`
-   - 📅 Google Calendar → `window.open(googleCalLink(firstMatch))`
+   - 📅 Google Calendar → `downloadICS(generateICS(...), filename)` + opens
+     `calendar.google.com/calendar/r/settings/import`
    - 🤖 Android → `downloadICS(generateICS(...), filename)`
    - 📧 Outlook → `downloadICS(generateICS(...), filename)`
-   All three download buttons call `getMatchesForScope(matchScope, selectedTeams)`
-   to build the event list. The Google Calendar button links to the first match
-   in that filtered list and keeps the existing tooltip about bulk limitation.
+   All four buttons call `getMatchesForScope(matchScope, selectedTeams)` to build
+   the event list. The Google Calendar button also opens the import settings page
+   and shows a tooltip with the match count and import instructions.
 
 6. **Implement `getMatchesForScope`.** Pure function, no side effects:
    - `"all"` → `MATCHES`
@@ -148,9 +149,13 @@ getMatchesForScope(scope, teams)
       same scope
 - [ ] "Outlook" button downloads the same .ics content as iPhone/Mac for the
       same scope
-- [ ] "Google Calendar" button opens a valid calendar.google.com URL for the
-      first match in the filtered list
-- [ ] Google Calendar button shows existing tooltip about bulk limitation
+- [ ] "Google Calendar" button downloads the same .ics content as iPhone/Mac for
+      the same scope
+- [ ] "Google Calendar" button opens the Google Calendar import settings page
+- [ ] Google Calendar button shows a tooltip with match count and import
+      instructions
+- [ ] Step 4 shows the number of matches ready to export before the user clicks
+      a platform button
 - [ ] Previously completed steps remain visible above the current step
 - [ ] Page is usable on a 375px-wide viewport with the wizard active
 
@@ -184,9 +189,11 @@ Chosen over `ms-outlook://` deep-link. Reason: deep-links only work if Outlook
 is installed and the scheme is registered; .ics import is universally supported
 across all Outlook versions (desktop, web, mobile).
 
-**Google Calendar = first-match link (unchanged)**
-No change from spec 01. The bulk limitation is a Google Calendar constraint, not
-a product decision. The .ics download is the real bulk path for all platforms.
+**Google Calendar = .ics download + import page**
+Changed from spec 01's first-match deep-link. Google Calendar has no bulk URL
+API, so the wizard now downloads the full .ics file (same as other platforms)
+and opens the import settings page. A tooltip guides the user to select the
+downloaded file.
 
 **getMatchesForScope supersedes getMatchesForTeams**
 The new function covers all three scopes cleanly. `getMatchesForTeams` is kept

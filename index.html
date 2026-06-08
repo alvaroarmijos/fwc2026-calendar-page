@@ -4,6 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FIFA World Cup 2026 — Calendar</title>
+  <meta name="description" content="Add all 104 FIFA World Cup 2026 matches — or only your teams' matches — to Google Calendar, Apple Calendar, or Outlook. Free, no signup.">
+  <link rel="icon" href="/favicon.ico" sizes="32x32">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FIFA World Cup 2026 — Calendar">
+  <meta property="og:description" content="Add all 104 matches — or only your teams — to your calendar in one click.">
+  <meta property="og:image" content="/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:locale" content="en_US">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="FIFA World Cup 2026 — Calendar">
+  <meta name="twitter:description" content="Add all 104 matches — or only your teams — to your calendar in one click.">
+  <meta name="twitter:image" content="/og-image.jpg">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -582,6 +597,20 @@
       min-height: 48px;
     }
 
+    .platform-hint {
+      margin-top: 12px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 560px;
+    }
+
+    .wizard-match-count {
+      margin: -8px 0 16px;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
     @media (max-width: 600px) {
       .scope-cards { grid-template-columns: 1fr; }
       .platform-buttons { grid-template-columns: 1fr; }
@@ -645,12 +674,13 @@
       <!-- Step 4: platform buttons -->
       <div id="wizard-step-4" class="wizard-step" style="display:none">
         <div class="section-heading">Step 4 · Add to your calendar</div>
+        <div class="wizard-match-count" id="wizard-step4-count"></div>
         <div class="platform-buttons">
           <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📱 iPhone / iPad / Mac</button>
-          <button class="btn-secondary platform-btn" onclick="handlePlatformGCal()">📅 Google Calendar</button>
-          <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">🤖 Android</button>
+          <button class="btn-primary platform-btn" onclick="handlePlatformGCal()">📅 Google Calendar (import .ics)</button>
           <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📧 Outlook</button>
         </div>
+        <p class="platform-hint">Google Calendar: downloads the .ics file and opens the import page. Select the downloaded file to add all matches.</p>
       </div>
 
     </div>
@@ -977,6 +1007,7 @@
       step4.style.display = wizardStep >= 4 ? "block" : "none";
       if (matchScope !== "all" && wizardStep >= 2) buildWizardChips();
       if (wizardStep >= 3) buildWizardTZBar();
+      if (wizardStep >= 4) updateStep4Summary();
       const cur = document.getElementById(`wizard-step-${wizardStep}`);
       if (cur && wizardStep > 1) cur.scrollIntoView({ behavior: "smooth" });
     }
@@ -1070,6 +1101,14 @@
       return "FWC2026-My-Teams-Plus-Knockouts.ics";
     }
 
+    function updateStep4Summary() {
+      const counter = document.getElementById("wizard-step4-count");
+      if (!counter) return;
+      const matches = getMatchesForScope(matchScope, selectedTeams);
+      const label = matches.length === 1 ? "match" : "matches";
+      counter.innerHTML = `Ready to export <strong>${matches.length} ${label}</strong> to your calendar.`;
+    }
+
     function handlePlatformDownload() {
       const matches = getMatchesForScope(matchScope, selectedTeams);
       downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
@@ -1078,8 +1117,13 @@
     function handlePlatformGCal() {
       const matches = getMatchesForScope(matchScope, selectedTeams);
       if (!matches.length) return;
-      window.open(googleCalLink(matches[0]), "_blank");
-      showTooltip("gcal-wizard-tip", "💡 Google Calendar opened with your first match. For all matches, use the .ics download → Google Calendar → Settings → Import.");
+      downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
+      window.open("https://calendar.google.com/calendar/r/settings/import", "_blank");
+      const label = matches.length === 1 ? "match" : "matches";
+      showTooltip(
+        "gcal-wizard-tip",
+        `💡 Downloaded .ics with ${matches.length} ${label}. In the Google Calendar tab, select the file to import all events.`
+      );
     }
 
     // ── Hero button handlers ───────────────────────────────────────
@@ -1135,7 +1179,7 @@
         <div class="teams-counter" id="teams-counter">Select teams above to see your matches.</div>
         <div class="teams-actions" id="teams-actions" style="display:none">
           <button class="btn-primary" onclick="handleDownloadTeams()">📥 Download .ics for My Teams</button>
-          <button class="btn-secondary" onclick="handleGCalTeams()">📅 Google Calendar — My Teams</button>
+          <button class="btn-primary" onclick="handleGCalTeams()">📅 Google Calendar — My Teams</button>
         </div>
       `;
       const container = document.getElementById("chips-container");
