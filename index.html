@@ -520,6 +520,72 @@
       opacity: 1;
       transform: translateX(-50%) translateY(0);
     }
+
+    /* ── Calendar Wizard ── */
+    #wizard { margin-bottom: 40px; }
+
+    .wizard-step + .wizard-step {
+      border-top: 1px solid var(--card-border);
+      margin-top: 4px;
+      padding-top: 24px;
+    }
+
+    .wizard-step > .section-heading { margin-bottom: 16px; }
+
+    .scope-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .scope-card {
+      background: var(--card-bg);
+      border: 1.5px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s;
+    }
+    .scope-card:hover { border-color: rgba(201,162,39,0.4); }
+    .scope-card--active {
+      border-color: var(--gold);
+      background: rgba(201,162,39,0.06);
+    }
+
+    .scope-card__title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .scope-card__desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      flex: 1;
+    }
+
+    .wizard-step__actions { margin-top: 16px; }
+
+    .platform-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 560px;
+    }
+
+    .platform-btn {
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+    }
+
+    @media (max-width: 600px) {
+      .scope-cards { grid-template-columns: 1fr; }
+      .platform-buttons { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -532,31 +598,62 @@
 
   <main>
 
-    <!-- ── Hero: two option cards ── -->
-    <section class="hero">
+    <!-- ── Calendar Wizard ── -->
+    <div id="wizard">
 
-      <div class="option-card" id="card-all">
-        <div class="option-card__icon">📅</div>
-        <h2 class="option-card__title">All 104 Matches</h2>
-        <p class="option-card__desc">Every match, every group, every round. One file for your entire World Cup.</p>
-        <div class="option-card__actions">
-          <button class="btn-primary" onclick="handleDownloadAll()">📥 Download .ics</button>
-          <button class="btn-secondary" onclick="handleGCalAll()">📅 Add to Google Calendar</button>
+      <!-- Step 1: match scope -->
+      <div id="wizard-step-1" class="wizard-step">
+        <div class="section-heading">Step 1 · Choose your match scope</div>
+        <div class="scope-cards">
+          <div class="scope-card" data-scope="all">
+            <div class="scope-card__title">All 104 matches</div>
+            <p class="scope-card__desc">Every match, every group, every round. One file for the complete World Cup.</p>
+            <button class="btn-primary" onclick="selectScope('all')">Select →</button>
+          </div>
+          <div class="scope-card" data-scope="selections">
+            <div class="scope-card__title">My teams only</div>
+            <p class="scope-card__desc">Group stage matches only for your selected teams.</p>
+            <button class="btn-primary" onclick="selectScope('selections')">Select →</button>
+          </div>
+          <div class="scope-card" data-scope="selections_plus_knockouts">
+            <div class="scope-card__title">My teams + knockouts</div>
+            <p class="scope-card__desc">Group stage for your teams, plus all 32 knockout slots.</p>
+            <button class="btn-primary" onclick="selectScope('selections_plus_knockouts')">Select →</button>
+          </div>
         </div>
-        <p class="option-card__hint">Works with iOS Calendar, macOS, Outlook &amp; Google Calendar</p>
       </div>
 
-      <div class="option-card" id="card-teams">
-        <div class="option-card__icon">🌍</div>
-        <h2 class="option-card__title">My Teams</h2>
-        <p class="option-card__desc">Pick your countries and add only their games — including all knockout slots.</p>
-        <div class="option-card__actions">
-          <button class="btn-primary" onclick="toggleTeamsPanel()">🏳️ Choose My Teams →</button>
+      <!-- Step 2: team picker -->
+      <div id="wizard-step-2" class="wizard-step" style="display:none">
+        <div class="section-heading">Step 2 · Pick your teams</div>
+        <div class="chips" id="wizard-chips"></div>
+        <div class="teams-counter" id="wizard-counter">Select at least one team to continue.</div>
+        <div class="wizard-step__actions">
+          <button class="btn-primary" id="wizard-step2-btn" onclick="continueFromStep2()" disabled>Continue →</button>
         </div>
-        <p class="option-card__hint" id="teams-hint" style="display:none"></p>
       </div>
 
-    </section>
+      <!-- Step 3: timezone -->
+      <div id="wizard-step-3" class="wizard-step" style="display:none">
+        <div class="section-heading">Step 3 · Choose your timezone</div>
+        <div id="wizard-tz-container"></div>
+        <div class="wizard-step__actions">
+          <button class="btn-primary" onclick="continueFromStep3()">Continue →</button>
+        </div>
+      </div>
+
+      <!-- Step 4: platform buttons -->
+      <div id="wizard-step-4" class="wizard-step" style="display:none">
+        <div class="section-heading">Step 4 · Add to your calendar</div>
+        <div class="platform-buttons">
+          <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📱 iPhone / iPad / Mac</button>
+          <button class="btn-secondary platform-btn" onclick="handlePlatformGCal()">📅 Google Calendar</button>
+          <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">🤖 Android</button>
+          <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📧 Outlook</button>
+        </div>
+      </div>
+
+    </div>
 
     <!-- ── My Teams panel (injected by JS in Step 5) ── -->
     <div id="teams-panel" style="display:none" class="teams-panel-wrap"></div>
@@ -833,6 +930,158 @@
       );
     }
 
+    // ── Wizard ────────────────────────────────────────────────────
+    let wizardStep = 1;
+    let matchScope = null;
+
+    function getMatchesForScope(scope, teams) {
+      if (scope === "all") return MATCHES;
+      const gs = MATCHES.filter(m => m.phase === "Group Stage" && (teams.has(m.home) || teams.has(m.away)));
+      if (scope === "selections") return gs;
+      return [...gs, ...MATCHES.filter(m => m.phase !== "Group Stage")];
+    }
+
+    function selectScope(scope) {
+      const prev = matchScope;
+      const step2WasDone = wizardStep > 2;
+      matchScope = scope;
+      if (scope !== prev && step2WasDone) {
+        selectedTeams = new Set();
+        document.querySelectorAll("#wizard-chips .chip").forEach(c => c.classList.remove("chip--active"));
+        updateWizardCounter();
+      }
+      document.querySelectorAll(".scope-card").forEach(c => c.classList.remove("scope-card--active"));
+      const card = document.querySelector(`.scope-card[data-scope="${scope}"]`);
+      if (card) card.classList.add("scope-card--active");
+      wizardStep = scope === "all" ? 3 : 2;
+      renderWizard();
+    }
+
+    function continueFromStep2() {
+      if (selectedTeams.size === 0) return;
+      wizardStep = 3;
+      renderWizard();
+    }
+
+    function continueFromStep3() {
+      wizardStep = 4;
+      renderWizard();
+    }
+
+    function renderWizard() {
+      const step2 = document.getElementById("wizard-step-2");
+      const step3 = document.getElementById("wizard-step-3");
+      const step4 = document.getElementById("wizard-step-4");
+      step2.style.display = (matchScope !== "all" && wizardStep >= 2) ? "block" : "none";
+      step3.style.display = wizardStep >= 3 ? "block" : "none";
+      step4.style.display = wizardStep >= 4 ? "block" : "none";
+      if (matchScope !== "all" && wizardStep >= 2) buildWizardChips();
+      if (wizardStep >= 3) buildWizardTZBar();
+      const cur = document.getElementById(`wizard-step-${wizardStep}`);
+      if (cur && wizardStep > 1) cur.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function buildWizardChips() {
+      const container = document.getElementById("wizard-chips");
+      if (container.dataset.built) return;
+      ALL_TEAMS.forEach(({ name, flag }) => {
+        const chip = document.createElement("button");
+        chip.className = "chip";
+        chip.dataset.team = name;
+        chip.innerHTML = `<span class="chip__flag">${flag}</span>${name}`;
+        chip.onclick = () => wizardToggleTeam(name);
+        container.appendChild(chip);
+      });
+      container.dataset.built = "1";
+    }
+
+    function wizardToggleTeam(name) {
+      if (selectedTeams.has(name)) {
+        selectedTeams.delete(name);
+      } else {
+        selectedTeams.add(name);
+      }
+      const chip = document.querySelector(`#wizard-chips .chip[data-team="${CSS.escape(name)}"]`);
+      if (chip) chip.classList.toggle("chip--active", selectedTeams.has(name));
+      updateWizardCounter();
+    }
+
+    function updateWizardCounter() {
+      const counter = document.getElementById("wizard-counter");
+      const btn = document.getElementById("wizard-step2-btn");
+      if (!counter) return;
+      if (selectedTeams.size === 0) {
+        counter.innerHTML = "Select at least one team to continue.";
+        if (btn) btn.disabled = true;
+        return;
+      }
+      const matches = getMatchesForScope(matchScope || "selections", selectedTeams);
+      counter.innerHTML = `Selected: <strong>${selectedTeams.size} ${selectedTeams.size === 1 ? "team" : "teams"}</strong> · <strong>${matches.length} matches</strong>`;
+      if (btn) btn.disabled = false;
+    }
+
+    function buildWizardTZBar() {
+      const container = document.getElementById("wizard-tz-container");
+      if (container.dataset.built) return;
+      const bar = document.createElement("div");
+      bar.className = "tz-bar";
+      const lbl = document.createElement("span");
+      lbl.className = "tz-bar__label";
+      lbl.textContent = "🕐 Timezone:";
+      bar.appendChild(lbl);
+      const pills = document.createElement("div");
+      pills.className = "tz-quickpicks";
+      TZ_QUICKPICKS.forEach(({ label: pillLabel, value }) => {
+        const btn = document.createElement("button");
+        btn.className = "tz-pill";
+        btn.dataset.tz = value;
+        btn.textContent = pillLabel;
+        btn.onclick = () => setTimezone(value);
+        pills.appendChild(btn);
+      });
+      bar.appendChild(pills);
+      const sel = document.createElement("select");
+      sel.className = "tz-select";
+      sel.id = "wizard-tz-select";
+      TZ_OPTIONS.forEach(({ label: optLabel, value }) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = optLabel;
+        sel.appendChild(opt);
+      });
+      const knownVals = TZ_OPTIONS.map(o => o.value);
+      if (!knownVals.includes(selectedTZ)) {
+        const opt = document.createElement("option");
+        opt.value = selectedTZ;
+        opt.textContent = selectedTZ;
+        sel.insertBefore(opt, sel.firstChild);
+      }
+      sel.value = selectedTZ;
+      sel.onchange = () => setTimezone(sel.value);
+      bar.appendChild(sel);
+      container.appendChild(bar);
+      container.dataset.built = "1";
+      setTimezone(selectedTZ);
+    }
+
+    function getICSFilename() {
+      if (matchScope === "all") return "FWC2026-All-Matches.ics";
+      if (matchScope === "selections") return "FWC2026-My-Teams.ics";
+      return "FWC2026-My-Teams-Plus-Knockouts.ics";
+    }
+
+    function handlePlatformDownload() {
+      const matches = getMatchesForScope(matchScope, selectedTeams);
+      downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
+    }
+
+    function handlePlatformGCal() {
+      const matches = getMatchesForScope(matchScope, selectedTeams);
+      if (!matches.length) return;
+      window.open(googleCalLink(matches[0]), "_blank");
+      showTooltip("gcal-wizard-tip", "💡 Google Calendar opened with your first match. For all matches, use the .ics download → Google Calendar → Settings → Import.");
+    }
+
     // ── Hero button handlers ───────────────────────────────────────
 
     function handleDownloadAll() {
@@ -1018,9 +1267,11 @@
 
     function setTimezone(tz) {
       selectedTZ = tz;
-      // Sync dropdown
+      // Sync dropdowns
       const sel = document.getElementById("tz-select");
       if (sel) sel.value = tz;
+      const wizardSel = document.getElementById("wizard-tz-select");
+      if (wizardSel) wizardSel.value = tz;
       // Sync quick-pick pills
       document.querySelectorAll(".tz-pill").forEach(btn => {
         btn.classList.toggle("tz-pill--active", btn.dataset.tz === tz);
