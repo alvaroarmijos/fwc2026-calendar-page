@@ -819,8 +819,12 @@
 
     .scope-cards {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
+    }
+
+    @media (max-width: 900px) {
+      .scope-cards { grid-template-columns: repeat(2, 1fr); }
     }
 
     .scope-card {
@@ -850,6 +854,25 @@
       color: var(--text-secondary);
       line-height: 1.5;
       flex: 1;
+    }
+
+    .scope-card--ai {
+      background:
+        radial-gradient(ellipse 80% 80% at 100% 0%, rgba(201, 162, 39, 0.12), transparent 60%),
+        var(--card-bg);
+    }
+
+    .scope-card__badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.14);
+      border: 1px solid rgba(201, 162, 39, 0.35);
+      border-radius: var(--radius-pill);
+      padding: 2px 8px;
     }
 
     .wizard-step__actions { margin-top: 16px; }
@@ -930,6 +953,12 @@
             <div class="scope-card__title">All 104 matches</div>
             <p class="scope-card__desc">Every match, every group, every round. One file for the complete World Cup.</p>
             <button class="btn-primary" onclick="selectScope('all')">Select →</button>
+          </div>
+          <div class="scope-card scope-card--ai" data-scope="ai_recommendation">
+            <div class="scope-card__title">Best matches</div>
+            <span class="scope-card__badge">✨ AI picks</span>
+            <p class="scope-card__desc">Let AI pick the best group stage matches for you, plus every knockout round. No teams to choose.</p>
+            <button class="btn-primary" onclick="selectScope('ai_recommendation')">Select →</button>
           </div>
           <div class="scope-card" data-scope="selections">
             <div class="scope-card__title">My teams only</div>
@@ -1134,6 +1163,15 @@
       { id:"FINAL", phase:"Final",      group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"MetLife Stadium, East Rutherford",         dateUTC:"20260719", timeUTC:"190000", matchLabel:"World Cup Final" },
     ];
 
+    // Curated group-stage highlights: openers, hosts, marquee nations, and group deciders.
+    const AI_PICK_MATCH_IDS = new Set([
+      "GS_A1", "GS_A6", "GS_B1", "GS_C1", "GS_C6", "GS_D1", "GS_D5",
+      "GS_E1", "GS_E6", "GS_F1", "GS_F6", "GS_G1", "GS_H1", "GS_H6",
+      "GS_I1", "GS_I5", "GS_J1", "GS_J3", "GS_K1", "GS_K5", "GS_L1", "GS_L5",
+    ]);
+
+    const SCOPES_SKIP_TEAMS = new Set(["all", "ai_recommendation"]);
+
     const TZ_OPTIONS = [
       { label:"New York / Miami (ET)",       value:"America/New_York" },
       { label:"Chicago / Dallas (CT)",        value:"America/Chicago" },
@@ -1294,6 +1332,11 @@
 
     function getMatchesForScope(scope, teams) {
       if (scope === "all") return MATCHES;
+      if (scope === "ai_recommendation") {
+        const aiPicks = MATCHES.filter(m => m.phase === "Group Stage" && AI_PICK_MATCH_IDS.has(m.id));
+        const knockouts = MATCHES.filter(m => m.phase !== "Group Stage");
+        return [...aiPicks, ...knockouts];
+      }
       const gs = MATCHES.filter(m => m.phase === "Group Stage" && (teams.has(m.home) || teams.has(m.away)));
       if (scope === "selections") return gs;
       return [...gs, ...MATCHES.filter(m => m.phase !== "Group Stage")];
@@ -1311,7 +1354,7 @@
       document.querySelectorAll(".scope-card").forEach(c => c.classList.remove("scope-card--active"));
       const card = document.querySelector(`.scope-card[data-scope="${scope}"]`);
       if (card) card.classList.add("scope-card--active");
-      wizardStep = scope === "all" ? 3 : 2;
+      wizardStep = SCOPES_SKIP_TEAMS.has(scope) ? 3 : 2;
       renderWizard();
     }
 
@@ -1343,7 +1386,7 @@
       const step4 = document.getElementById("wizard-step-4");
       const browseSection = document.getElementById("browse-section");
       const browseTz = document.getElementById("browse-tz-bar");
-      step2.style.display = (matchScope !== "all" && wizardStep === 2) ? "block" : "none";
+      step2.style.display = (!SCOPES_SKIP_TEAMS.has(matchScope) && wizardStep === 2) ? "block" : "none";
       step3.style.display = wizardStep >= 3 ? "block" : "none";
       step4.style.display = wizardStep === 4 ? "block" : "none";
       const step3Actions = document.querySelector("#wizard-step-3 .wizard-step__actions");
@@ -1352,7 +1395,7 @@
         browseSection.classList.toggle("browse-section--wizard-active", wizardStep > 1 && wizardStep < 4);
       }
       if (browseTz) browseTz.style.display = wizardStep >= 4 ? "" : "none";
-      if (matchScope !== "all" && wizardStep === 2) buildWizardChips();
+      if (!SCOPES_SKIP_TEAMS.has(matchScope) && wizardStep === 2) buildWizardChips();
       if (wizardStep >= 3) buildWizardTZBar();
       if (wizardStep === 4) updateStep4Summary();
       updateWizardProgress();
@@ -1367,7 +1410,7 @@
     function updateWizardProgress() {
       const container = document.getElementById("wizard-progress");
       if (!container) return;
-      const skipTeams = matchScope === "all";
+      const skipTeams = SCOPES_SKIP_TEAMS.has(matchScope);
       const steps = [
         { num: 1, label: "Scope" },
         { num: 2, label: "Teams", skip: skipTeams },
@@ -1492,6 +1535,7 @@
 
     function getICSFilename() {
       if (matchScope === "all") return "FWC2026-All-Matches.ics";
+      if (matchScope === "ai_recommendation") return "FWC2026-AI-Picks.ics";
       if (matchScope === "selections") return "FWC2026-My-Teams.ics";
       return "FWC2026-My-Teams-Plus-Knockouts.ics";
     }
