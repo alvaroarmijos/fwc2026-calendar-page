@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FIFA World Cup 2026 — Calendar</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    button, select, input {
+      font-family: inherit;
+      font-size: inherit;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    select:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    :root {
+      --bg: #08080f;
+      --card-bg: #111119;
+      --card-border: #1c1c2e;
+      --gold: #c9a227;
+      --gold-dark: #a07d15;
+      --text-primary: #e8e8f0;
+      --text-secondary: #888;
+      --radius-card: 14px;
+      --radius-btn: 8px;
+      --radius-pill: 999px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    /* ── Sticky header ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      background: rgba(8, 8, 15, 0.88);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.01em;
+    }
+
+    header .subtitle {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-left: auto;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ── Buttons ── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--gold);
+      color: #0a0a0a;
+      font-weight: 700;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: var(--radius-btn);
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-primary:hover { background: var(--gold-dark); }
+    .btn-primary:disabled { opacity: 0.4; cursor: default; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: transparent;
+      color: var(--gold);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: 1.5px solid var(--gold);
+      border-radius: var(--radius-btn);
+      padding: 10px 18px;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-secondary:hover { background: rgba(201,162,39,0.1); }
+    .btn-secondary:disabled { opacity: 0.4; cursor: default; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 24px;
+    }
+    .card:hover { border-color: rgba(201,162,39,0.3); }
+
+    /* ── Hero ── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .option-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: border-color 0.2s;
+    }
+    .option-card:hover { border-color: rgba(201,162,39,0.4); }
+
+    .option-card__icon { font-size: 2.5rem; line-height: 1; }
+
+    .option-card__title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .option-card__desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .option-card__actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .option-card__hint {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    @media (max-width: 640px) {
+      .hero { grid-template-columns: 1fr; }
+    }
+
+    /* ── My Teams panel ── */
+    #teams-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 28px;
+      margin-bottom: 40px;
+    }
+
+    .teams-panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    #teams-panel h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    .teams-panel__close {
+      padding: 5px 12px;
+      font-size: 0.8rem;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #1a1a28;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-pill);
+      padding: 6px 13px;
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .chip:hover { border-color: var(--gold); }
+    .chip.chip--active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0a0a0a;
+      font-weight: 600;
+    }
+    .chip__flag { font-size: 1.4rem; line-height: 1; }
+
+    .teams-counter {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      min-height: 1.4em;
+    }
+    .teams-counter strong { color: var(--text-primary); }
+
+    .teams-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    /* ── Section heading ── */
+    .section-heading {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    /* ── Match browser / timezone ── */
+    #match-browser { margin-top: 8px; }
+
+    .tz-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 16px 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tz-bar__label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .tz-quickpicks {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      flex-shrink: 0;
+    }
+    .tz-quickpicks::-webkit-scrollbar { display: none; }
+
+    .tz-pill {
+      background: #1a1a28;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-pill);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .tz-pill:hover { border-color: var(--gold); color: var(--gold); }
+    .tz-pill.tz-pill--active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0a0a0a;
+    }
+
+    .tz-select {
+      background: #1a1a28;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-btn);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      cursor: pointer;
+      margin-left: auto;
+      max-width: 240px;
+    }
+    .tz-select:focus { outline: 1px solid var(--gold); }
+
+    /* ── Phase & group tabs ── */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      background: #1a1a28;
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-pill);
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      min-height: 36px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .tab:hover { border-color: var(--gold); color: var(--gold); }
+    .tab.tab--active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #0a0a0a;
+    }
+
+    .group-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    /* ── Match grid & cards ── */
+    .match-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .match-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-card);
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: border-color 0.2s;
+    }
+    .match-card:hover { border-color: rgba(201,162,39,0.3); }
+
+    .match-card__header {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .match-card__teams {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .match-card__flag { font-size: 1.8rem; line-height: 1; }
+
+    .match-card__name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .match-card__vs {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin: 0 2px;
+    }
+
+    .match-card__matchlabel {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .match-card__time {
+      font-size: 0.82rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .match-card__venue {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    /* ── Knockout banner ── */
+    .ko-banner {
+      background: rgba(201,162,39,0.08);
+      border: 1px solid rgba(201,162,39,0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--gold);
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 640px) {
+      /* Layout */
+      header { padding: 12px 16px; }
+      header h1 { font-size: 1rem; }
+      header .subtitle { display: none; }
+      main { padding: 20px 14px 60px; }
+
+      /* Hero */
+      .hero { grid-template-columns: 1fr; gap: 14px; }
+      .option-card { padding: 22px 18px; }
+      .option-card__icon { font-size: 2rem; }
+      .option-card__title { font-size: 1.15rem; }
+      .option-card__actions { flex-direction: column; }
+      .option-card__actions .btn-primary,
+      .option-card__actions .btn-secondary { width: 100%; justify-content: center; }
+
+      /* Teams panel */
+      #teams-panel { padding: 18px 14px; }
+      .teams-actions { flex-direction: column; }
+      .teams-actions .btn-primary,
+      .teams-actions .btn-secondary { width: 100%; justify-content: center; }
+
+      /* Timezone bar */
+      .tz-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 14px 16px;
+      }
+      .tz-select { margin-left: 0; max-width: 100%; width: 100%; }
+      .tz-quickpicks { width: 100%; }
+
+      /* Tabs */
+      .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: 6px;
+        padding-bottom: 2px;
+      }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab { flex-shrink: 0; }
+
+      .group-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+      }
+      .group-tabs::-webkit-scrollbar { display: none; }
+      .group-tabs .tab { flex-shrink: 0; }
+
+      /* Match grid */
+      .match-grid { grid-template-columns: 1fr; gap: 10px; }
+      .match-card { padding: 14px 14px; }
+      .match-card__flag { font-size: 1.5rem; }
+
+      /* Buttons — minimum touch target */
+      .btn-primary, .btn-secondary { min-height: 44px; }
+      .chip { min-height: 38px; }
+    }
+
+    /* ── Tooltip ── */
+    .tooltip {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(8px);
+      background: #1e1e2e;
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      padding: 12px 18px;
+      border-radius: 10px;
+      max-width: min(90vw, 480px);
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 200;
+    }
+    .tooltip--visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <span style="font-size:1.4rem">🏆</span>
+    <h1>FIFA World Cup 2026</h1>
+    <span class="subtitle">Add matches to your calendar</span>
+  </header>
+
+  <main>
+
+    <!-- ── Hero: two option cards ── -->
+    <section class="hero">
+
+      <div class="option-card" id="card-all">
+        <div class="option-card__icon">📅</div>
+        <h2 class="option-card__title">All 104 Matches</h2>
+        <p class="option-card__desc">Every match, every group, every round. One file for your entire World Cup.</p>
+        <div class="option-card__actions">
+          <button class="btn-primary" onclick="handleDownloadAll()">📥 Download .ics</button>
+          <button class="btn-secondary" onclick="handleGCalAll()">📅 Add to Google Calendar</button>
+        </div>
+        <p class="option-card__hint">Works with iOS Calendar, macOS, Outlook &amp; Google Calendar</p>
+      </div>
+
+      <div class="option-card" id="card-teams">
+        <div class="option-card__icon">🌍</div>
+        <h2 class="option-card__title">My Teams</h2>
+        <p class="option-card__desc">Pick your countries and add only their games — including all knockout slots.</p>
+        <div class="option-card__actions">
+          <button class="btn-primary" onclick="toggleTeamsPanel()">🏳️ Choose My Teams →</button>
+        </div>
+        <p class="option-card__hint" id="teams-hint" style="display:none"></p>
+      </div>
+
+    </section>
+
+    <!-- ── My Teams panel (injected by JS in Step 5) ── -->
+    <div id="teams-panel" style="display:none" class="teams-panel-wrap"></div>
+
+    <!-- ── Match browser (injected by JS in Step 7) ── -->
+    <div class="section-heading">Browse All Matches</div>
+    <div id="match-browser"></div>
+
+  </main>
+
+  <script>
+    const MATCHES = [
+      // ── Group A: Mexico · South Africa · South Korea · Czech Republic ──
+      { id:"GS_A1", phase:"Group Stage", group:"A", home:"Mexico",        away:"South Africa",        homeFlag:"🇲🇽", awayFlag:"🇿🇦", venue:"Estadio Azteca, Mexico City",          dateUTC:"20260611", timeUTC:"190000", matchLabel:null },
+      { id:"GS_A2", phase:"Group Stage", group:"A", home:"South Korea",   away:"Czech Republic",      homeFlag:"🇰🇷", awayFlag:"🇨🇿", venue:"Estadio Akron, Guadalajara",           dateUTC:"20260612", timeUTC:"020000", matchLabel:null },
+      { id:"GS_A3", phase:"Group Stage", group:"A", home:"Czech Republic",away:"South Africa",        homeFlag:"🇨🇿", awayFlag:"🇿🇦", venue:"Mercedes-Benz Stadium, Atlanta",       dateUTC:"20260618", timeUTC:"160000", matchLabel:null },
+      { id:"GS_A4", phase:"Group Stage", group:"A", home:"Mexico",        away:"South Korea",         homeFlag:"🇲🇽", awayFlag:"🇰🇷", venue:"Estadio Akron, Guadalajara",           dateUTC:"20260619", timeUTC:"010000", matchLabel:null },
+      { id:"GS_A5", phase:"Group Stage", group:"A", home:"South Africa",  away:"South Korea",         homeFlag:"🇿🇦", awayFlag:"🇰🇷", venue:"Estadio BBVA, Monterrey",              dateUTC:"20260625", timeUTC:"010000", matchLabel:null },
+      { id:"GS_A6", phase:"Group Stage", group:"A", home:"Czech Republic",away:"Mexico",              homeFlag:"🇨🇿", awayFlag:"🇲🇽", venue:"Estadio Azteca, Mexico City",          dateUTC:"20260625", timeUTC:"010000", matchLabel:null },
+      // ── Group B: Canada · Bosnia & Herzegovina · Qatar · Switzerland ──
+      { id:"GS_B1", phase:"Group Stage", group:"B", home:"Canada",        away:"Bosnia & Herzegovina",homeFlag:"🇨🇦", awayFlag:"🇧🇦", venue:"BMO Field, Toronto",                  dateUTC:"20260612", timeUTC:"190000", matchLabel:null },
+      { id:"GS_B2", phase:"Group Stage", group:"B", home:"Qatar",         away:"Switzerland",         homeFlag:"🇶🇦", awayFlag:"🇨🇭", venue:"Levi's Stadium, Santa Clara",          dateUTC:"20260613", timeUTC:"190000", matchLabel:null },
+      { id:"GS_B3", phase:"Group Stage", group:"B", home:"Switzerland",   away:"Bosnia & Herzegovina",homeFlag:"🇨🇭", awayFlag:"🇧🇦", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260618", timeUTC:"190000", matchLabel:null },
+      { id:"GS_B4", phase:"Group Stage", group:"B", home:"Canada",        away:"Qatar",               homeFlag:"🇨🇦", awayFlag:"🇶🇦", venue:"BC Place, Vancouver",                  dateUTC:"20260618", timeUTC:"220000", matchLabel:null },
+      { id:"GS_B5", phase:"Group Stage", group:"B", home:"Switzerland",   away:"Canada",              homeFlag:"🇨🇭", awayFlag:"🇨🇦", venue:"BC Place, Vancouver",                  dateUTC:"20260624", timeUTC:"190000", matchLabel:null },
+      { id:"GS_B6", phase:"Group Stage", group:"B", home:"Bosnia & Herzegovina",away:"Qatar",         homeFlag:"🇧🇦", awayFlag:"🇶🇦", venue:"Lumen Field, Seattle",                dateUTC:"20260624", timeUTC:"190000", matchLabel:null },
+      // ── Group C: Brazil · Morocco · Haiti · Scotland ──
+      { id:"GS_C1", phase:"Group Stage", group:"C", home:"Brazil",        away:"Morocco",             homeFlag:"🇧🇷", awayFlag:"🇲🇦", venue:"MetLife Stadium, East Rutherford",     dateUTC:"20260613", timeUTC:"220000", matchLabel:null },
+      { id:"GS_C2", phase:"Group Stage", group:"C", home:"Haiti",         away:"Scotland",            homeFlag:"🇭🇹", awayFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", venue:"Gillette Stadium, Foxborough",        dateUTC:"20260614", timeUTC:"010000", matchLabel:null },
+      { id:"GS_C3", phase:"Group Stage", group:"C", home:"Scotland",      away:"Morocco",             homeFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag:"🇲🇦", venue:"Gillette Stadium, Foxborough",        dateUTC:"20260619", timeUTC:"220000", matchLabel:null },
+      { id:"GS_C4", phase:"Group Stage", group:"C", home:"Brazil",        away:"Haiti",               homeFlag:"🇧🇷", awayFlag:"🇭🇹", venue:"Lincoln Financial Field, Philadelphia",dateUTC:"20260620", timeUTC:"003000", matchLabel:null },
+      { id:"GS_C5", phase:"Group Stage", group:"C", home:"Morocco",       away:"Haiti",               homeFlag:"🇲🇦", awayFlag:"🇭🇹", venue:"Mercedes-Benz Stadium, Atlanta",       dateUTC:"20260624", timeUTC:"220000", matchLabel:null },
+      { id:"GS_C6", phase:"Group Stage", group:"C", home:"Scotland",      away:"Brazil",              homeFlag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿", awayFlag:"🇧🇷", venue:"Hard Rock Stadium, Miami",            dateUTC:"20260624", timeUTC:"220000", matchLabel:null },
+      // ── Group D: USA · Paraguay · Australia · Turkey ──
+      { id:"GS_D1", phase:"Group Stage", group:"D", home:"USA",           away:"Paraguay",            homeFlag:"🇺🇸", awayFlag:"🇵🇾", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260613", timeUTC:"010000", matchLabel:null },
+      { id:"GS_D2", phase:"Group Stage", group:"D", home:"Australia",     away:"Turkey",              homeFlag:"🇦🇺", awayFlag:"🇹🇷", venue:"BC Place, Vancouver",                  dateUTC:"20260614", timeUTC:"040000", matchLabel:null },
+      { id:"GS_D3", phase:"Group Stage", group:"D", home:"USA",           away:"Australia",           homeFlag:"🇺🇸", awayFlag:"🇦🇺", venue:"Lumen Field, Seattle",                 dateUTC:"20260619", timeUTC:"190000", matchLabel:null },
+      { id:"GS_D4", phase:"Group Stage", group:"D", home:"Turkey",        away:"Paraguay",            homeFlag:"🇹🇷", awayFlag:"🇵🇾", venue:"Levi's Stadium, Santa Clara",          dateUTC:"20260620", timeUTC:"030000", matchLabel:null },
+      { id:"GS_D5", phase:"Group Stage", group:"D", home:"Turkey",        away:"USA",                 homeFlag:"🇹🇷", awayFlag:"🇺🇸", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260626", timeUTC:"020000", matchLabel:null },
+      { id:"GS_D6", phase:"Group Stage", group:"D", home:"Paraguay",      away:"Australia",           homeFlag:"🇵🇾", awayFlag:"🇦🇺", venue:"Levi's Stadium, Santa Clara",          dateUTC:"20260626", timeUTC:"020000", matchLabel:null },
+      // ── Group E: Germany · Curacao · Ivory Coast · Ecuador ──
+      { id:"GS_E1", phase:"Group Stage", group:"E", home:"Germany",       away:"Curacao",             homeFlag:"🇩🇪", awayFlag:"🇨🇼", venue:"NRG Stadium, Houston",                 dateUTC:"20260614", timeUTC:"170000", matchLabel:null },
+      { id:"GS_E2", phase:"Group Stage", group:"E", home:"Ivory Coast",   away:"Ecuador",             homeFlag:"🇨🇮", awayFlag:"🇪🇨", venue:"Lincoln Financial Field, Philadelphia",dateUTC:"20260614", timeUTC:"230000", matchLabel:null },
+      { id:"GS_E3", phase:"Group Stage", group:"E", home:"Germany",       away:"Ivory Coast",         homeFlag:"🇩🇪", awayFlag:"🇨🇮", venue:"BMO Field, Toronto",                   dateUTC:"20260620", timeUTC:"200000", matchLabel:null },
+      { id:"GS_E4", phase:"Group Stage", group:"E", home:"Ecuador",       away:"Curacao",             homeFlag:"🇪🇨", awayFlag:"🇨🇼", venue:"Arrowhead Stadium, Kansas City",       dateUTC:"20260621", timeUTC:"000000", matchLabel:null },
+      { id:"GS_E5", phase:"Group Stage", group:"E", home:"Curacao",       away:"Ivory Coast",         homeFlag:"🇨🇼", awayFlag:"🇨🇮", venue:"Lincoln Financial Field, Philadelphia",dateUTC:"20260625", timeUTC:"200000", matchLabel:null },
+      { id:"GS_E6", phase:"Group Stage", group:"E", home:"Ecuador",       away:"Germany",             homeFlag:"🇪🇨", awayFlag:"🇩🇪", venue:"MetLife Stadium, East Rutherford",     dateUTC:"20260625", timeUTC:"200000", matchLabel:null },
+      // ── Group F: Netherlands · Japan · Sweden · Tunisia ──
+      { id:"GS_F1", phase:"Group Stage", group:"F", home:"Netherlands",   away:"Japan",               homeFlag:"🇳🇱", awayFlag:"🇯🇵", venue:"AT&T Stadium, Arlington",              dateUTC:"20260614", timeUTC:"200000", matchLabel:null },
+      { id:"GS_F2", phase:"Group Stage", group:"F", home:"Sweden",        away:"Tunisia",             homeFlag:"🇸🇪", awayFlag:"🇹🇳", venue:"Estadio BBVA, Monterrey",              dateUTC:"20260615", timeUTC:"020000", matchLabel:null },
+      { id:"GS_F3", phase:"Group Stage", group:"F", home:"Netherlands",   away:"Sweden",              homeFlag:"🇳🇱", awayFlag:"🇸🇪", venue:"NRG Stadium, Houston",                 dateUTC:"20260620", timeUTC:"170000", matchLabel:null },
+      { id:"GS_F4", phase:"Group Stage", group:"F", home:"Tunisia",       away:"Japan",               homeFlag:"🇹🇳", awayFlag:"🇯🇵", venue:"Estadio BBVA, Monterrey",              dateUTC:"20260621", timeUTC:"040000", matchLabel:null },
+      { id:"GS_F5", phase:"Group Stage", group:"F", home:"Tunisia",       away:"Netherlands",         homeFlag:"🇹🇳", awayFlag:"🇳🇱", venue:"Arrowhead Stadium, Kansas City",       dateUTC:"20260625", timeUTC:"230000", matchLabel:null },
+      { id:"GS_F6", phase:"Group Stage", group:"F", home:"Japan",         away:"Sweden",              homeFlag:"🇯🇵", awayFlag:"🇸🇪", venue:"AT&T Stadium, Arlington",              dateUTC:"20260625", timeUTC:"230000", matchLabel:null },
+      // ── Group G: Belgium · Egypt · Iran · New Zealand ──
+      { id:"GS_G1", phase:"Group Stage", group:"G", home:"Belgium",       away:"Egypt",               homeFlag:"🇧🇪", awayFlag:"🇪🇬", venue:"Lumen Field, Seattle",                 dateUTC:"20260615", timeUTC:"190000", matchLabel:null },
+      { id:"GS_G2", phase:"Group Stage", group:"G", home:"Iran",          away:"New Zealand",         homeFlag:"🇮🇷", awayFlag:"🇳🇿", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260616", timeUTC:"010000", matchLabel:null },
+      { id:"GS_G3", phase:"Group Stage", group:"G", home:"Belgium",       away:"Iran",                homeFlag:"🇧🇪", awayFlag:"🇮🇷", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260621", timeUTC:"190000", matchLabel:null },
+      { id:"GS_G4", phase:"Group Stage", group:"G", home:"New Zealand",   away:"Egypt",               homeFlag:"🇳🇿", awayFlag:"🇪🇬", venue:"BC Place, Vancouver",                  dateUTC:"20260622", timeUTC:"010000", matchLabel:null },
+      { id:"GS_G5", phase:"Group Stage", group:"G", home:"New Zealand",   away:"Belgium",             homeFlag:"🇳🇿", awayFlag:"🇧🇪", venue:"BC Place, Vancouver",                  dateUTC:"20260627", timeUTC:"030000", matchLabel:null },
+      { id:"GS_G6", phase:"Group Stage", group:"G", home:"Egypt",         away:"Iran",                homeFlag:"🇪🇬", awayFlag:"🇮🇷", venue:"Lumen Field, Seattle",                 dateUTC:"20260627", timeUTC:"030000", matchLabel:null },
+      // ── Group H: Spain · Cape Verde · Saudi Arabia · Uruguay ──
+      { id:"GS_H1", phase:"Group Stage", group:"H", home:"Spain",         away:"Cape Verde",          homeFlag:"🇪🇸", awayFlag:"🇨🇻", venue:"Mercedes-Benz Stadium, Atlanta",       dateUTC:"20260615", timeUTC:"160000", matchLabel:null },
+      { id:"GS_H2", phase:"Group Stage", group:"H", home:"Saudi Arabia",  away:"Uruguay",             homeFlag:"🇸🇦", awayFlag:"🇺🇾", venue:"Hard Rock Stadium, Miami",             dateUTC:"20260615", timeUTC:"220000", matchLabel:null },
+      { id:"GS_H3", phase:"Group Stage", group:"H", home:"Spain",         away:"Saudi Arabia",        homeFlag:"🇪🇸", awayFlag:"🇸🇦", venue:"Mercedes-Benz Stadium, Atlanta",       dateUTC:"20260621", timeUTC:"160000", matchLabel:null },
+      { id:"GS_H4", phase:"Group Stage", group:"H", home:"Uruguay",       away:"Cape Verde",          homeFlag:"🇺🇾", awayFlag:"🇨🇻", venue:"Hard Rock Stadium, Miami",             dateUTC:"20260621", timeUTC:"220000", matchLabel:null },
+      { id:"GS_H5", phase:"Group Stage", group:"H", home:"Cape Verde",    away:"Saudi Arabia",        homeFlag:"🇨🇻", awayFlag:"🇸🇦", venue:"NRG Stadium, Houston",                 dateUTC:"20260627", timeUTC:"000000", matchLabel:null },
+      { id:"GS_H6", phase:"Group Stage", group:"H", home:"Uruguay",       away:"Spain",               homeFlag:"🇺🇾", awayFlag:"🇪🇸", venue:"Estadio Akron, Guadalajara",           dateUTC:"20260627", timeUTC:"000000", matchLabel:null },
+      // ── Group I: France · Senegal · Iraq · Norway ──
+      { id:"GS_I1", phase:"Group Stage", group:"I", home:"France",        away:"Senegal",             homeFlag:"🇫🇷", awayFlag:"🇸🇳", venue:"MetLife Stadium, East Rutherford",     dateUTC:"20260616", timeUTC:"190000", matchLabel:null },
+      { id:"GS_I2", phase:"Group Stage", group:"I", home:"Iraq",          away:"Norway",              homeFlag:"🇮🇶", awayFlag:"🇳🇴", venue:"Gillette Stadium, Foxborough",         dateUTC:"20260616", timeUTC:"220000", matchLabel:null },
+      { id:"GS_I3", phase:"Group Stage", group:"I", home:"France",        away:"Iraq",                homeFlag:"🇫🇷", awayFlag:"🇮🇶", venue:"Lincoln Financial Field, Philadelphia",dateUTC:"20260622", timeUTC:"210000", matchLabel:null },
+      { id:"GS_I4", phase:"Group Stage", group:"I", home:"Norway",        away:"Senegal",             homeFlag:"🇳🇴", awayFlag:"🇸🇳", venue:"BMO Field, Toronto",                   dateUTC:"20260623", timeUTC:"000000", matchLabel:null },
+      { id:"GS_I5", phase:"Group Stage", group:"I", home:"Norway",        away:"France",              homeFlag:"🇳🇴", awayFlag:"🇫🇷", venue:"Gillette Stadium, Foxborough",         dateUTC:"20260626", timeUTC:"190000", matchLabel:null },
+      { id:"GS_I6", phase:"Group Stage", group:"I", home:"Senegal",       away:"Iraq",                homeFlag:"🇸🇳", awayFlag:"🇮🇶", venue:"BMO Field, Toronto",                   dateUTC:"20260626", timeUTC:"190000", matchLabel:null },
+      // ── Group J: Argentina · Algeria · Austria · Jordan ──
+      { id:"GS_J1", phase:"Group Stage", group:"J", home:"Argentina",     away:"Algeria",             homeFlag:"🇦🇷", awayFlag:"🇩🇿", venue:"Arrowhead Stadium, Kansas City",       dateUTC:"20260617", timeUTC:"010000", matchLabel:null },
+      { id:"GS_J2", phase:"Group Stage", group:"J", home:"Austria",       away:"Jordan",              homeFlag:"🇦🇹", awayFlag:"🇯🇴", venue:"Levi's Stadium, Santa Clara",          dateUTC:"20260617", timeUTC:"040000", matchLabel:null },
+      { id:"GS_J3", phase:"Group Stage", group:"J", home:"Argentina",     away:"Austria",             homeFlag:"🇦🇷", awayFlag:"🇦🇹", venue:"AT&T Stadium, Arlington",              dateUTC:"20260622", timeUTC:"170000", matchLabel:null },
+      { id:"GS_J4", phase:"Group Stage", group:"J", home:"Jordan",        away:"Algeria",             homeFlag:"🇯🇴", awayFlag:"🇩🇿", venue:"Levi's Stadium, Santa Clara",          dateUTC:"20260623", timeUTC:"030000", matchLabel:null },
+      { id:"GS_J5", phase:"Group Stage", group:"J", home:"Algeria",       away:"Austria",             homeFlag:"🇩🇿", awayFlag:"🇦🇹", venue:"Arrowhead Stadium, Kansas City",       dateUTC:"20260628", timeUTC:"020000", matchLabel:null },
+      { id:"GS_J6", phase:"Group Stage", group:"J", home:"Jordan",        away:"Argentina",           homeFlag:"🇯🇴", awayFlag:"🇦🇷", venue:"AT&T Stadium, Arlington",              dateUTC:"20260628", timeUTC:"020000", matchLabel:null },
+      // ── Group K: Portugal · DR Congo · Uzbekistan · Colombia ──
+      { id:"GS_K1", phase:"Group Stage", group:"K", home:"Portugal",      away:"DR Congo",            homeFlag:"🇵🇹", awayFlag:"🇨🇩", venue:"NRG Stadium, Houston",                 dateUTC:"20260617", timeUTC:"170000", matchLabel:null },
+      { id:"GS_K2", phase:"Group Stage", group:"K", home:"Uzbekistan",    away:"Colombia",            homeFlag:"🇺🇿", awayFlag:"🇨🇴", venue:"Estadio Azteca, Mexico City",          dateUTC:"20260618", timeUTC:"020000", matchLabel:null },
+      { id:"GS_K3", phase:"Group Stage", group:"K", home:"Portugal",      away:"Uzbekistan",          homeFlag:"🇵🇹", awayFlag:"🇺🇿", venue:"NRG Stadium, Houston",                 dateUTC:"20260623", timeUTC:"170000", matchLabel:null },
+      { id:"GS_K4", phase:"Group Stage", group:"K", home:"Colombia",      away:"DR Congo",            homeFlag:"🇨🇴", awayFlag:"🇨🇩", venue:"Estadio Akron, Guadalajara",           dateUTC:"20260624", timeUTC:"020000", matchLabel:null },
+      { id:"GS_K5", phase:"Group Stage", group:"K", home:"Colombia",      away:"Portugal",            homeFlag:"🇨🇴", awayFlag:"🇵🇹", venue:"Hard Rock Stadium, Miami",             dateUTC:"20260627", timeUTC:"233000", matchLabel:null },
+      { id:"GS_K6", phase:"Group Stage", group:"K", home:"DR Congo",      away:"Uzbekistan",          homeFlag:"🇨🇩", awayFlag:"🇺🇿", venue:"Mercedes-Benz Stadium, Atlanta",       dateUTC:"20260627", timeUTC:"233000", matchLabel:null },
+      // ── Group L: England · Croatia · Ghana · Panama ──
+      { id:"GS_L1", phase:"Group Stage", group:"L", home:"England",       away:"Croatia",             homeFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag:"🇭🇷", venue:"AT&T Stadium, Arlington",              dateUTC:"20260617", timeUTC:"200000", matchLabel:null },
+      { id:"GS_L2", phase:"Group Stage", group:"L", home:"Ghana",         away:"Panama",              homeFlag:"🇬🇭", awayFlag:"🇵🇦", venue:"BMO Field, Toronto",                   dateUTC:"20260617", timeUTC:"230000", matchLabel:null },
+      { id:"GS_L3", phase:"Group Stage", group:"L", home:"England",       away:"Ghana",               homeFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", awayFlag:"🇬🇭", venue:"Gillette Stadium, Foxborough",         dateUTC:"20260623", timeUTC:"200000", matchLabel:null },
+      { id:"GS_L4", phase:"Group Stage", group:"L", home:"Panama",        away:"Croatia",             homeFlag:"🇵🇦", awayFlag:"🇭🇷", venue:"Gillette Stadium, Foxborough",         dateUTC:"20260623", timeUTC:"230000", matchLabel:null },
+      { id:"GS_L5", phase:"Group Stage", group:"L", home:"Panama",        away:"England",             homeFlag:"🇵🇦", awayFlag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿", venue:"MetLife Stadium, East Rutherford",     dateUTC:"20260627", timeUTC:"210000", matchLabel:null },
+      { id:"GS_L6", phase:"Group Stage", group:"L", home:"Croatia",       away:"Ghana",               homeFlag:"🇭🇷", awayFlag:"🇬🇭", venue:"Lincoln Financial Field, Philadelphia",dateUTC:"20260627", timeUTC:"210000", matchLabel:null },
+
+      // ── Round of 32 (16 matches) ──
+      { id:"R32_01", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"SoFi Stadium, Los Angeles",            dateUTC:"20260628", timeUTC:"190000", matchLabel:"Runner-up Group A vs Runner-up Group B" },
+      { id:"R32_02", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"NRG Stadium, Houston",                  dateUTC:"20260629", timeUTC:"170000", matchLabel:"Winner Group C vs Runner-up Group F" },
+      { id:"R32_03", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Gillette Stadium, Foxborough",           dateUTC:"20260629", timeUTC:"203000", matchLabel:"Winner Group E vs Best 3rd Place" },
+      { id:"R32_04", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Estadio BBVA, Monterrey",               dateUTC:"20260630", timeUTC:"010000", matchLabel:"Winner Group F vs Runner-up Group C" },
+      { id:"R32_05", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"AT&T Stadium, Arlington",               dateUTC:"20260630", timeUTC:"170000", matchLabel:"Runner-up Group E vs Runner-up Group I" },
+      { id:"R32_06", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"MetLife Stadium, East Rutherford",      dateUTC:"20260630", timeUTC:"210000", matchLabel:"Winner Group I vs Best 3rd Place" },
+      { id:"R32_07", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Estadio Azteca, Mexico City",           dateUTC:"20260701", timeUTC:"010000", matchLabel:"Winner Group A vs Best 3rd Place" },
+      { id:"R32_08", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Mercedes-Benz Stadium, Atlanta",        dateUTC:"20260701", timeUTC:"160000", matchLabel:"Winner Group L vs Best 3rd Place" },
+      { id:"R32_09", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Lumen Field, Seattle",                  dateUTC:"20260701", timeUTC:"200000", matchLabel:"Winner Group G vs Best 3rd Place" },
+      { id:"R32_10", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Levi's Stadium, Santa Clara",           dateUTC:"20260702", timeUTC:"000000", matchLabel:"Winner Group D vs Best 3rd Place" },
+      { id:"R32_11", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"SoFi Stadium, Los Angeles",             dateUTC:"20260702", timeUTC:"190000", matchLabel:"Winner Group H vs Runner-up Group J" },
+      { id:"R32_12", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"BMO Field, Toronto",                    dateUTC:"20260702", timeUTC:"230000", matchLabel:"Runner-up Group K vs Runner-up Group L" },
+      { id:"R32_13", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"BC Place, Vancouver",                   dateUTC:"20260703", timeUTC:"030000", matchLabel:"Winner Group B vs Best 3rd Place" },
+      { id:"R32_14", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"AT&T Stadium, Arlington",               dateUTC:"20260703", timeUTC:"180000", matchLabel:"Runner-up Group D vs Runner-up Group G" },
+      { id:"R32_15", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Hard Rock Stadium, Miami",              dateUTC:"20260703", timeUTC:"220000", matchLabel:"Winner Group J vs Runner-up Group H" },
+      { id:"R32_16", phase:"Round of 32", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Arrowhead Stadium, Kansas City",        dateUTC:"20260704", timeUTC:"013000", matchLabel:"Winner Group K vs Best 3rd Place" },
+
+      // ── Round of 16 (8 matches) ──
+      { id:"R16_01", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"NRG Stadium, Houston",                  dateUTC:"20260704", timeUTC:"170000", matchLabel:"Round of 16 — Match 1" },
+      { id:"R16_02", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Lincoln Financial Field, Philadelphia", dateUTC:"20260704", timeUTC:"210000", matchLabel:"Round of 16 — Match 2" },
+      { id:"R16_03", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"MetLife Stadium, East Rutherford",      dateUTC:"20260705", timeUTC:"200000", matchLabel:"Round of 16 — Match 3" },
+      { id:"R16_04", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Estadio Azteca, Mexico City",           dateUTC:"20260706", timeUTC:"000000", matchLabel:"Round of 16 — Match 4" },
+      { id:"R16_05", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"AT&T Stadium, Arlington",               dateUTC:"20260706", timeUTC:"190000", matchLabel:"Round of 16 — Match 5" },
+      { id:"R16_06", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Lumen Field, Seattle",                  dateUTC:"20260707", timeUTC:"000000", matchLabel:"Round of 16 — Match 6" },
+      { id:"R16_07", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Mercedes-Benz Stadium, Atlanta",        dateUTC:"20260707", timeUTC:"160000", matchLabel:"Round of 16 — Match 7" },
+      { id:"R16_08", phase:"Round of 16", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"BC Place, Vancouver",                   dateUTC:"20260707", timeUTC:"200000", matchLabel:"Round of 16 — Match 8" },
+
+      // ── Quarter-finals (4 matches) ──
+      { id:"QF_01", phase:"Quarter-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Gillette Stadium, Foxborough",          dateUTC:"20260709", timeUTC:"200000", matchLabel:"Quarter-final 1" },
+      { id:"QF_02", phase:"Quarter-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"SoFi Stadium, Los Angeles",             dateUTC:"20260710", timeUTC:"190000", matchLabel:"Quarter-final 2" },
+      { id:"QF_03", phase:"Quarter-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Hard Rock Stadium, Miami",              dateUTC:"20260711", timeUTC:"210000", matchLabel:"Quarter-final 3" },
+      { id:"QF_04", phase:"Quarter-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Arrowhead Stadium, Kansas City",        dateUTC:"20260712", timeUTC:"010000", matchLabel:"Quarter-final 4" },
+
+      // ── Semi-finals (2 matches) ──
+      { id:"SF_01", phase:"Semi-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"AT&T Stadium, Arlington",                 dateUTC:"20260714", timeUTC:"190000", matchLabel:"Semi-final 1" },
+      { id:"SF_02", phase:"Semi-final", group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Mercedes-Benz Stadium, Atlanta",           dateUTC:"20260715", timeUTC:"190000", matchLabel:"Semi-final 2" },
+
+      // ── 3rd Place & Final ──
+      { id:"THIRD", phase:"3rd Place",  group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"Hard Rock Stadium, Miami",                dateUTC:"20260718", timeUTC:"210000", matchLabel:"3rd Place Match" },
+      { id:"FINAL", phase:"Final",      group:null, home:null, away:null, homeFlag:"⚽", awayFlag:"⚽", venue:"MetLife Stadium, East Rutherford",         dateUTC:"20260719", timeUTC:"190000", matchLabel:"World Cup Final" },
+    ];
+
+    const TZ_OPTIONS = [
+      { label:"New York / Miami (ET)",       value:"America/New_York" },
+      { label:"Chicago / Dallas (CT)",        value:"America/Chicago" },
+      { label:"Denver (MT)",                  value:"America/Denver" },
+      { label:"Los Angeles / Seattle (PT)",   value:"America/Los_Angeles" },
+      { label:"Mexico City / Guadalajara",    value:"America/Mexico_City" },
+      { label:"Toronto / Montreal",           value:"America/Toronto" },
+      { label:"Vancouver",                    value:"America/Vancouver" },
+      { label:"London (GMT/BST)",             value:"Europe/London" },
+      { label:"Madrid / Paris / Rome (CET)",  value:"Europe/Madrid" },
+      { label:"São Paulo (BRT)",              value:"America/Sao_Paulo" },
+      { label:"Buenos Aires (ART)",           value:"America/Argentina/Buenos_Aires" },
+      { label:"Tokyo (JST)",                  value:"Asia/Tokyo" },
+      { label:"Seoul (KST)",                  value:"Asia/Seoul" },
+      { label:"Riyadh (AST)",                 value:"Asia/Riyadh" },
+      { label:"UTC",                          value:"UTC" },
+    ];
+
+    // ── Runtime state ──────────────────────────────────────────────
+    let selectedTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let selectedTeams = new Set();
+    let currentPhase = "Group Stage";
+    let currentGroup = "A";
+
+    // ── Utilities ──────────────────────────────────────────────────
+
+    function formatMatchTime(m, tz) {
+      const dt = new Date(
+        `${m.dateUTC.slice(0,4)}-${m.dateUTC.slice(4,6)}-${m.dateUTC.slice(6,8)}` +
+        `T${m.timeUTC.slice(0,2)}:${m.timeUTC.slice(2,4)}:${m.timeUTC.slice(4,6)}Z`
+      );
+      const date = dt.toLocaleDateString("en-US", { timeZone:tz, month:"short", day:"numeric" });
+      const time = dt.toLocaleTimeString("en-US", { timeZone:tz, hour:"numeric", minute:"2-digit" });
+      const tzAbbr = dt.toLocaleTimeString("en-US", { timeZone:tz, timeZoneName:"short" }).split(" ").pop();
+      return `${date} · ${time} ${tzAbbr}`;
+    }
+
+    function foldLine(str) {
+      const enc = new TextEncoder();
+      const CRLF = "\r\n";
+      let result = "";
+      let line = "";
+      for (const char of str) {
+        const candidate = line + char;
+        if (enc.encode(candidate).length > 75) {
+          result += line + CRLF + " ";
+          line = char;
+        } else {
+          line = candidate;
+        }
+      }
+      return result + line;
+    }
+
+    function generateICS(matches, calName) {
+      const CRLF = "\r\n";
+      const stamp = new Date().toISOString().replace(/[-:.]/g,"").slice(0,15) + "Z";
+      const events = matches.map(m => {
+        const title = m.group
+          ? `${m.homeFlag} ${m.home} vs ${m.away} ${m.awayFlag} · FWC2026`
+          : `⚽ FWC2026 ${m.phase} — ${m.matchLabel}`;
+        const duration = m.phase === "Group Stage" ? "PT2H30M" : "PT3H30M";
+        return [
+          "BEGIN:VEVENT",
+          `UID:fwc2026-${m.id}@fwc2026app`,
+          `DTSTAMP:${stamp}`,
+          `DTSTART:${m.dateUTC}T${m.timeUTC}Z`,
+          `DURATION:${duration}`,
+          `SUMMARY:${foldLine(title)}`,
+          `LOCATION:${foldLine(m.venue)}`,
+          `DESCRIPTION:${foldLine(formatMatchTime(m, "UTC"))}`,
+          "STATUS:CONFIRMED",
+          "TRANSP:OPAQUE",
+          "BEGIN:VALARM",
+          "ACTION:DISPLAY",
+          "DESCRIPTION:Match starting in 30 minutes",
+          "TRIGGER:-PT30M",
+          "END:VALARM",
+          "END:VEVENT",
+        ].join(CRLF);
+      });
+      return [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//FWC2026//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        `X-WR-CALNAME:${calName}`,
+        ...events,
+        "END:VCALENDAR",
+      ].join(CRLF) + CRLF;
+    }
+
+    function downloadICS(content, filename) {
+      const blob = new Blob([content], { type:"text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function googleCalLink(m) {
+      const start = `${m.dateUTC}T${m.timeUTC}Z`;
+      const durationMs = m.phase === "Group Stage" ? 150 : 210; // minutes
+      const dt = new Date(
+        `${m.dateUTC.slice(0,4)}-${m.dateUTC.slice(4,6)}-${m.dateUTC.slice(6,8)}` +
+        `T${m.timeUTC.slice(0,2)}:${m.timeUTC.slice(2,4)}:${m.timeUTC.slice(4,6)}Z`
+      );
+      const endDt = new Date(dt.getTime() + durationMs * 60000);
+      const pad = n => String(n).padStart(2,"0");
+      const end = endDt.toISOString().replace(/[-:]/g,"").slice(0,15) + "Z";
+      const title = m.group
+        ? `${m.homeFlag} ${m.home} vs ${m.away} ${m.awayFlag} · FWC2026`
+        : `⚽ FWC2026 ${m.phase} — ${m.matchLabel}`;
+      const params = new URLSearchParams({
+        action: "TEMPLATE",
+        text: title,
+        dates: `${start.replace(/[-:]/g,"")}/${end}`,
+        location: m.venue,
+        details: formatMatchTime(m, "UTC"),
+      });
+      return `https://calendar.google.com/calendar/render?${params}`;
+    }
+
+    function getMatchesForTeams(teams) {
+      return MATCHES.filter(m =>
+        m.group === null ||
+        teams.has(m.home) ||
+        teams.has(m.away)
+      );
+    }
+
+    // ── Hero button handlers ───────────────────────────────────────
+
+    function handleDownloadAll() {
+      const ics = generateICS(MATCHES, "FIFA World Cup 2026");
+      downloadICS(ics, "fwc2026-all-matches.ics");
+    }
+
+    function handleGCalAll() {
+      // Google Calendar has no bulk import URL — open first match and show tip
+      const link = googleCalLink(MATCHES[0]);
+      window.open(link, "_blank");
+      showTooltip("gcal-all-tip", "💡 Tip: for all 104 matches, use the .ics download instead. Google Calendar → Settings → Import.");
+    }
+
+    function showTooltip(id, msg) {
+      let tip = document.getElementById(id);
+      if (!tip) {
+        tip = document.createElement("div");
+        tip.id = id;
+        tip.className = "tooltip";
+        document.body.appendChild(tip);
+      }
+      tip.textContent = msg;
+      tip.classList.add("tooltip--visible");
+      clearTimeout(tip._t);
+      tip._t = setTimeout(() => tip.classList.remove("tooltip--visible"), 6000);
+    }
+
+    // ── My Teams panel ───────────────────────────────────────────
+
+    // Build sorted team list from group stage matches
+    const ALL_TEAMS = (() => {
+      const map = new Map();
+      MATCHES.filter(m => m.group !== null).forEach(m => {
+        if (!map.has(m.home)) map.set(m.home, m.homeFlag);
+        if (!map.has(m.away)) map.set(m.away, m.awayFlag);
+      });
+      return [...map.entries()]
+        .sort((a, b) => a[0].localeCompare(b[0]))
+        .map(([name, flag]) => ({ name, flag }));
+    })();
+
+    function buildTeamsPanel() {
+      const panel = document.getElementById("teams-panel");
+      panel.innerHTML = `
+        <div class="teams-panel__header">
+          <h3>🌍 Choose Your Teams</h3>
+          <button class="teams-panel__close btn-secondary" onclick="toggleTeamsPanel()" aria-label="Close">✕ Close</button>
+        </div>
+        <div class="chips" id="chips-container"></div>
+        <div class="teams-counter" id="teams-counter">Select teams above to see your matches.</div>
+        <div class="teams-actions" id="teams-actions" style="display:none">
+          <button class="btn-primary" onclick="handleDownloadTeams()">📥 Download .ics for My Teams</button>
+          <button class="btn-secondary" onclick="handleGCalTeams()">📅 Google Calendar — My Teams</button>
+        </div>
+      `;
+      const container = document.getElementById("chips-container");
+      ALL_TEAMS.forEach(({ name, flag }) => {
+        const chip = document.createElement("button");
+        chip.className = "chip";
+        chip.dataset.team = name;
+        chip.innerHTML = `<span class="chip__flag">${flag}</span>${name}`;
+        chip.onclick = () => toggleTeam(name);
+        container.appendChild(chip);
+      });
+    }
+
+    function toggleTeam(name) {
+      if (selectedTeams.has(name)) {
+        selectedTeams.delete(name);
+      } else {
+        selectedTeams.add(name);
+      }
+      // Update chip appearance
+      const chip = document.querySelector(`.chip[data-team="${CSS.escape(name)}"]`);
+      if (chip) chip.classList.toggle("chip--active", selectedTeams.has(name));
+      updateTeamsCounter();
+    }
+
+    function updateTeamsCounter() {
+      const counter = document.getElementById("teams-counter");
+      const actions = document.getElementById("teams-actions");
+      if (!counter) return;
+      if (selectedTeams.size === 0) {
+        counter.innerHTML = "Select teams above to see your matches.";
+        if (actions) actions.style.display = "none";
+        return;
+      }
+      const matches = getMatchesForTeams(selectedTeams);
+      const gsCount = matches.filter(m => m.group !== null).length;
+      const koCount = matches.filter(m => m.group === null).length;
+      counter.innerHTML = `<strong>${selectedTeams.size} ${selectedTeams.size === 1 ? "team" : "teams"} selected</strong> · ${gsCount} group stage + ${koCount} knockout slots = <strong>${matches.length} matches</strong>`;
+      if (actions) actions.style.display = "flex";
+    }
+
+    function handleDownloadTeams() {
+      if (selectedTeams.size === 0) return;
+      const matches = getMatchesForTeams(selectedTeams);
+      const names = [...selectedTeams].sort().join(", ");
+      const ics = generateICS(matches, `FWC2026 — My Teams`);
+      downloadICS(ics, "fwc2026-my-teams.ics");
+    }
+
+    function handleGCalTeams() {
+      if (selectedTeams.size === 0) return;
+      const matches = getMatchesForTeams(selectedTeams);
+      // Open first group stage match (or first match) as GCal event
+      const first = matches.find(m => m.group !== null) || matches[0];
+      window.open(googleCalLink(first), "_blank");
+      showTooltip("gcal-teams-tip", "💡 Google Calendar opened with your first match. For all your team's matches, use the .ics download → Google Calendar → Settings → Import.");
+    }
+
+    function toggleTeamsPanel() {
+      const panel = document.getElementById("teams-panel");
+      const isOpen = panel.style.display !== "none";
+      panel.style.display = isOpen ? "none" : "block";
+      if (!isOpen && !panel.dataset.built) {
+        buildTeamsPanel();
+        panel.dataset.built = "1";
+      }
+    }
+
+    // ── Timezone selector ─────────────────────────────────────────
+
+    const TZ_QUICKPICKS = [
+      { label:"ET",  value:"America/New_York" },
+      { label:"CT",  value:"America/Chicago" },
+      { label:"MT",  value:"America/Denver" },
+      { label:"PT",  value:"America/Los_Angeles" },
+      { label:"MX",  value:"America/Mexico_City" },
+      { label:"GMT", value:"Europe/London" },
+      { label:"CET", value:"Europe/Madrid" },
+      { label:"BRT", value:"America/Sao_Paulo" },
+      { label:"ART", value:"America/Argentina/Buenos_Aires" },
+      { label:"JST", value:"Asia/Tokyo" },
+    ];
+
+    function buildTZBar() {
+      const bar = document.createElement("div");
+      bar.className = "tz-bar";
+
+      const label = document.createElement("span");
+      label.className = "tz-bar__label";
+      label.textContent = "🕐 Timezone:";
+      bar.appendChild(label);
+
+      const pills = document.createElement("div");
+      pills.className = "tz-quickpicks";
+      pills.id = "tz-quickpicks";
+      TZ_QUICKPICKS.forEach(({ label: lbl, value }) => {
+        const btn = document.createElement("button");
+        btn.className = "tz-pill";
+        btn.dataset.tz = value;
+        btn.textContent = lbl;
+        btn.onclick = () => setTimezone(value);
+        pills.appendChild(btn);
+      });
+      bar.appendChild(pills);
+
+      const sel = document.createElement("select");
+      sel.className = "tz-select";
+      sel.id = "tz-select";
+      TZ_OPTIONS.forEach(({ label: lbl, value }) => {
+        const opt = document.createElement("option");
+        opt.value = value;
+        opt.textContent = lbl;
+        sel.appendChild(opt);
+      });
+      // Add browser TZ as custom option if not in list
+      const knownValues = TZ_OPTIONS.map(o => o.value);
+      if (!knownValues.includes(selectedTZ)) {
+        const opt = document.createElement("option");
+        opt.value = selectedTZ;
+        opt.textContent = selectedTZ;
+        sel.insertBefore(opt, sel.firstChild);
+      }
+      sel.value = selectedTZ;
+      sel.onchange = () => setTimezone(sel.value);
+      bar.appendChild(sel);
+
+      return bar;
+    }
+
+    function setTimezone(tz) {
+      selectedTZ = tz;
+      // Sync dropdown
+      const sel = document.getElementById("tz-select");
+      if (sel) sel.value = tz;
+      // Sync quick-pick pills
+      document.querySelectorAll(".tz-pill").forEach(btn => {
+        btn.classList.toggle("tz-pill--active", btn.dataset.tz === tz);
+      });
+      // Re-render all visible time labels
+      document.querySelectorAll("[data-match-id]").forEach(el => {
+        const m = MATCHES.find(x => x.id === el.dataset.matchId);
+        if (m) el.textContent = formatMatchTime(m, selectedTZ);
+      });
+    }
+
+    function initTZBar() {
+      // Pre-select nearest quick-pick pill on load
+      const qp = TZ_QUICKPICKS.find(q => q.value === selectedTZ);
+      if (qp) {
+        // will be set when bar renders via setTimezone sync
+      }
+    }
+
+    // ── Match browser ─────────────────────────────────────────────
+
+    const PHASES = ["Group Stage","Round of 32","Round of 16","Quarter-final","Semi-final","3rd Place","Final"];
+    const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+
+    function matchdayLabel(m) {
+      const n = parseInt(m.id.slice(-1));
+      return `Group ${m.group} · Matchday ${Math.ceil(n / 2)}`;
+    }
+
+    function makeMatchCard(m) {
+      const card = document.createElement("div");
+      card.className = "match-card";
+
+      const hdr = document.createElement("div");
+      hdr.className = "match-card__header";
+      hdr.textContent = m.group ? matchdayLabel(m) : m.phase;
+      card.appendChild(hdr);
+
+      if (!m.group) {
+        const lbl = document.createElement("div");
+        lbl.className = "match-card__matchlabel";
+        lbl.textContent = m.matchLabel;
+        card.appendChild(lbl);
+      }
+
+      const teams = document.createElement("div");
+      teams.className = "match-card__teams";
+      if (m.group) {
+        teams.innerHTML = `
+          <span class="match-card__flag">${m.homeFlag}</span>
+          <span class="match-card__name">${m.home}</span>
+          <span class="match-card__vs">vs</span>
+          <span class="match-card__name">${m.away}</span>
+          <span class="match-card__flag">${m.awayFlag}</span>
+        `;
+      } else {
+        teams.innerHTML = `
+          <span class="match-card__flag">⚽</span>
+          <span class="match-card__vs">vs</span>
+          <span class="match-card__flag">⚽</span>
+        `;
+      }
+      card.appendChild(teams);
+
+      const time = document.createElement("div");
+      time.className = "match-card__time";
+      time.dataset.matchId = m.id;
+      time.textContent = formatMatchTime(m, selectedTZ);
+      card.appendChild(time);
+
+      const venue = document.createElement("div");
+      venue.className = "match-card__venue";
+      venue.textContent = m.venue;
+      card.appendChild(venue);
+
+      return card;
+    }
+
+    function buildPhaseContent() {
+      const container = document.getElementById("phase-content");
+      if (!container) return;
+      container.innerHTML = "";
+
+      // Phase tabs
+      const tabs = document.createElement("div");
+      tabs.className = "tabs";
+      PHASES.forEach(ph => {
+        const btn = document.createElement("button");
+        btn.className = "tab" + (ph === currentPhase ? " tab--active" : "");
+        btn.textContent = ph;
+        btn.onclick = () => setPhase(ph);
+        tabs.appendChild(btn);
+      });
+      container.appendChild(tabs);
+
+      // Group sub-tabs (Group Stage only)
+      if (currentPhase === "Group Stage") {
+        const gtabs = document.createElement("div");
+        gtabs.className = "group-tabs";
+        GROUPS.forEach(g => {
+          const btn = document.createElement("button");
+          btn.className = "tab" + (g === currentGroup ? " tab--active" : "");
+          btn.textContent = `Group ${g}`;
+          btn.onclick = () => setGroup(g);
+          gtabs.appendChild(btn);
+        });
+        container.appendChild(gtabs);
+      }
+
+      // Knockout banner for non-group phases
+      if (currentPhase !== "Group Stage") {
+        const banner = document.createElement("div");
+        banner.className = "ko-banner";
+        banner.textContent = "⚽ Teams TBD after group stage. Dates and venues are confirmed — add them now.";
+        container.appendChild(banner);
+      }
+
+      // Filter matches for current view
+      let matches;
+      if (currentPhase === "Group Stage") {
+        matches = MATCHES.filter(m => m.group === currentGroup);
+      } else {
+        matches = MATCHES.filter(m => m.phase === currentPhase);
+      }
+
+      // Render grid
+      const grid = document.createElement("div");
+      grid.className = "match-grid";
+      matches.forEach(m => grid.appendChild(makeMatchCard(m)));
+      container.appendChild(grid);
+    }
+
+    function setPhase(phase) {
+      currentPhase = phase;
+      buildPhaseContent();
+    }
+
+    function setGroup(group) {
+      currentGroup = group;
+      buildPhaseContent();
+    }
+
+    function buildMatchBrowser() {
+      const browser = document.getElementById("match-browser");
+      browser.appendChild(buildTZBar());
+      const ph = document.createElement("div");
+      ph.id = "phase-content";
+      browser.appendChild(ph);
+      setTimezone(selectedTZ);
+      buildPhaseContent();
+    }
+
+    document.addEventListener("DOMContentLoaded", buildMatchBrowser);
+  </script>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 # 01-fwc2026-calendar-page
 
-**State:** Draft
+**State:** Implemented
 **Date:** 2026-06-07
 **Dependencies:** none
 
