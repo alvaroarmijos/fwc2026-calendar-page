@@ -277,8 +277,27 @@
       margin-bottom: 12px;
     }
 
+    /* ── Browse section (separate from wizard) ── */
+    .browse-section {
+      margin-top: 56px;
+      padding-top: 40px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .browse-section__heading {
+      margin-bottom: 6px;
+    }
+
+    .browse-section__desc {
+      margin: 0 0 20px;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      max-width: 560px;
+    }
+
     /* ── Match browser / timezone ── */
-    #match-browser { margin-top: 8px; }
+    #match-browser { margin-top: 0; }
 
     .tz-bar {
       background: var(--card-bg);
@@ -539,6 +558,68 @@
     /* ── Calendar Wizard ── */
     #wizard { margin-bottom: 40px; }
 
+    .wizard-progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 28px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .wizard-progress::-webkit-scrollbar { display: none; }
+
+    .wizard-progress__step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .wizard-progress__step--active { color: var(--gold); }
+    .wizard-progress__step--done { color: var(--text-primary); }
+    .wizard-progress__step--skipped {
+      color: var(--text-secondary);
+      opacity: 0.45;
+      text-decoration: line-through;
+    }
+
+    .wizard-progress__dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 1.5px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      background: var(--card-bg);
+    }
+    .wizard-progress__step--active .wizard-progress__dot {
+      border-color: var(--gold);
+      background: rgba(201,162,39,0.15);
+      color: var(--gold);
+    }
+    .wizard-progress__step--done .wizard-progress__dot {
+      border-color: var(--gold);
+      background: var(--gold);
+      color: #0a0a0a;
+    }
+
+    .wizard-progress__connector {
+      width: 20px;
+      height: 1.5px;
+      background: var(--card-border);
+      flex-shrink: 0;
+      margin: 0 4px;
+    }
+    .wizard-progress__connector--done { background: var(--gold); }
+
     .wizard-step + .wizard-step {
       border-top: 1px solid var(--card-border);
       margin-top: 4px;
@@ -546,6 +627,21 @@
     }
 
     .wizard-step > .section-heading { margin-bottom: 16px; }
+
+    .wizard-next-hint {
+      margin: 0 0 12px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .wizard-tz-hint {
+      margin: 0 0 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+    .wizard-tz-hint strong { color: var(--text-primary); }
 
     .scope-cards {
       display: grid;
@@ -630,6 +726,8 @@
     <!-- ── Calendar Wizard ── -->
     <div id="wizard">
 
+      <div id="wizard-progress" class="wizard-progress" aria-label="Calendar setup progress"></div>
+
       <!-- Step 1: match scope -->
       <div id="wizard-step-1" class="wizard-step">
         <div class="section-heading">Step 1 · Choose your match scope</div>
@@ -657,6 +755,7 @@
         <div class="section-heading">Step 2 · Pick your teams</div>
         <div class="chips" id="wizard-chips"></div>
         <div class="teams-counter" id="wizard-counter">Select at least one team to continue.</div>
+        <p class="wizard-next-hint">Next: choose your timezone, then pick how to add matches to your calendar.</p>
         <div class="wizard-step__actions">
           <button class="btn-primary" id="wizard-step2-btn" onclick="continueFromStep2()" disabled>Continue →</button>
         </div>
@@ -665,6 +764,7 @@
       <!-- Step 3: timezone -->
       <div id="wizard-step-3" class="wizard-step" style="display:none">
         <div class="section-heading">Step 3 · Choose your timezone</div>
+        <p class="wizard-tz-hint" id="wizard-tz-hint">Match times in your calendar file will use <strong id="wizard-tz-label">your timezone</strong>.</p>
         <div id="wizard-tz-container"></div>
         <div class="wizard-step__actions">
           <button class="btn-primary" onclick="continueFromStep3()">Continue →</button>
@@ -678,9 +778,10 @@
         <div class="platform-buttons">
           <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📱 iPhone / iPad / Mac</button>
           <button class="btn-primary platform-btn" onclick="handlePlatformGCal()">📅 Google Calendar (import .ics)</button>
+          <button class="btn-primary platform-btn" onclick="handlePlatformAndroid()">🤖 Android</button>
           <button class="btn-primary platform-btn" onclick="handlePlatformDownload()">📧 Outlook</button>
         </div>
-        <p class="platform-hint">Google Calendar: downloads the .ics file and opens the import page. Select the downloaded file to add all matches.</p>
+        <p class="platform-hint">Android: opens the import dialog in your calendar app. Google Calendar (desktop): downloads the .ics file and opens the import page.</p>
       </div>
 
     </div>
@@ -688,9 +789,12 @@
     <!-- ── My Teams panel (injected by JS in Step 5) ── -->
     <div id="teams-panel" style="display:none" class="teams-panel-wrap"></div>
 
-    <!-- ── Match browser (injected by JS in Step 7) ── -->
-    <div class="section-heading">Browse All Matches</div>
-    <div id="match-browser"></div>
+    <!-- ── Match browser (separate from calendar wizard) ── -->
+    <div id="browse-section" class="browse-section">
+      <div class="section-heading browse-section__heading">Browse All Matches</div>
+      <p class="browse-section__desc">Explore the full schedule and preview kickoff times. This is separate from the steps above for adding matches to your calendar.</p>
+      <div id="match-browser"></div>
+    </div>
 
   </main>
 
@@ -910,23 +1014,28 @@
         "VERSION:2.0",
         "PRODID:-//FWC2026//EN",
         "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
         `X-WR-CALNAME:${calName}`,
         ...events,
         "END:VCALENDAR",
       ].join(CRLF) + CRLF;
     }
 
-    function downloadICS(content, filename) {
-      const blob = new Blob([content], { type:"text/calendar;charset=utf-8" });
+    function isAndroid() {
+      return /android/i.test(navigator.userAgent);
+    }
+
+    function downloadICS(content, filename, { openInCalendar = false } = {}) {
+      const blob = new Blob([content], { type: "text/calendar" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = filename;
+      if (!openInCalendar) {
+        a.download = filename;
+      }
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), openInCalendar ? 60000 : 0);
     }
 
     function googleCalLink(m) {
@@ -1002,14 +1111,59 @@
       const step2 = document.getElementById("wizard-step-2");
       const step3 = document.getElementById("wizard-step-3");
       const step4 = document.getElementById("wizard-step-4");
-      step2.style.display = (matchScope !== "all" && wizardStep >= 2) ? "block" : "none";
-      step3.style.display = wizardStep >= 3 ? "block" : "none";
-      step4.style.display = wizardStep >= 4 ? "block" : "none";
-      if (matchScope !== "all" && wizardStep >= 2) buildWizardChips();
-      if (wizardStep >= 3) buildWizardTZBar();
-      if (wizardStep >= 4) updateStep4Summary();
+      step2.style.display = (matchScope !== "all" && wizardStep === 2) ? "block" : "none";
+      step3.style.display = wizardStep === 3 ? "block" : "none";
+      step4.style.display = wizardStep === 4 ? "block" : "none";
+      if (matchScope !== "all" && wizardStep === 2) buildWizardChips();
+      if (wizardStep === 3) buildWizardTZBar();
+      if (wizardStep === 4) updateStep4Summary();
+      updateWizardProgress();
+      updateWizardTZHint();
       const cur = document.getElementById(`wizard-step-${wizardStep}`);
       if (cur && wizardStep > 1) cur.scrollIntoView({ behavior: "smooth" });
+    }
+
+    function updateWizardProgress() {
+      const container = document.getElementById("wizard-progress");
+      if (!container) return;
+      const skipTeams = matchScope === "all";
+      const steps = [
+        { num: 1, label: "Scope" },
+        { num: 2, label: "Teams", skip: skipTeams },
+        { num: 3, label: "Timezone" },
+        { num: 4, label: "Calendar" },
+      ];
+      const isComplete = (step) => step.skip || wizardStep > step.num;
+      container.innerHTML = "";
+      steps.forEach((step, i) => {
+        if (i > 0) {
+          const conn = document.createElement("div");
+          conn.className = "wizard-progress__connector" + (isComplete(steps[i - 1]) ? " wizard-progress__connector--done" : "");
+          container.appendChild(conn);
+        }
+        const el = document.createElement("div");
+        let state = "upcoming";
+        if (step.skip) state = "skipped";
+        else if (wizardStep === step.num) state = "active";
+        else if (wizardStep > step.num) state = "done";
+        el.className = `wizard-progress__step wizard-progress__step--${state}`;
+        el.setAttribute("aria-current", state === "active" ? "step" : "false");
+        const dot = document.createElement("span");
+        dot.className = "wizard-progress__dot";
+        dot.textContent = state === "done" ? "✓" : String(step.num);
+        const lbl = document.createElement("span");
+        lbl.textContent = step.label;
+        el.appendChild(dot);
+        el.appendChild(lbl);
+        container.appendChild(el);
+      });
+    }
+
+    function updateWizardTZHint() {
+      const label = document.getElementById("wizard-tz-label");
+      if (!label) return;
+      const opt = TZ_OPTIONS.find(o => o.value === selectedTZ);
+      label.textContent = opt ? opt.label : selectedTZ;
     }
 
     function buildWizardChips() {
@@ -1114,9 +1268,28 @@
       downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
     }
 
+    function handlePlatformAndroid() {
+      const matches = getMatchesForScope(matchScope, selectedTeams);
+      if (!matches.length) return;
+      const label = matches.length === 1 ? "match" : "matches";
+      downloadICS(
+        generateICS(matches, "FIFA World Cup 2026"),
+        getICSFilename(),
+        { openInCalendar: true }
+      );
+      showTooltip(
+        "android-wizard-tip",
+        `💡 Choose Google Calendar (or your calendar app) to import ${matches.length} ${label}.`
+      );
+    }
+
     function handlePlatformGCal() {
       const matches = getMatchesForScope(matchScope, selectedTeams);
       if (!matches.length) return;
+      if (isAndroid()) {
+        handlePlatformAndroid();
+        return;
+      }
       downloadICS(generateICS(matches, "FIFA World Cup 2026"), getICSFilename());
       window.open("https://calendar.google.com/calendar/r/settings/import", "_blank");
       const label = matches.length === 1 ? "match" : "matches";
@@ -1320,6 +1493,7 @@
       document.querySelectorAll(".tz-pill").forEach(btn => {
         btn.classList.toggle("tz-pill--active", btn.dataset.tz === tz);
       });
+      updateWizardTZHint();
       // Re-render all visible time labels
       document.querySelectorAll("[data-match-id]").forEach(el => {
         const m = MATCHES.find(x => x.id === el.dataset.matchId);
@@ -1468,7 +1642,10 @@
       buildPhaseContent();
     }
 
-    document.addEventListener("DOMContentLoaded", buildMatchBrowser);
+    document.addEventListener("DOMContentLoaded", () => {
+      buildMatchBrowser();
+      updateWizardProgress();
+    });
   </script>
 
   <script type="module" src="/vercel-analytics.js"></script>
