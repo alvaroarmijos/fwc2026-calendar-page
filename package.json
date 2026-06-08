@@ -1,0 +1,28 @@
+{
+  "name": "fwc2026-calendar-page",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild analytics.js --bundle --outfile=vercel-analytics.js --format=esm --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alvaroarmijos/fwc2026-calendar-page.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/alvaroarmijos/fwc2026-calendar-page/issues"
+  },
+  "homepage": "https://github.com/alvaroarmijos/fwc2026-calendar-page#readme",
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
