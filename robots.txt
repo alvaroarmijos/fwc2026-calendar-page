@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fwc2026-calendar-page.vercel.app/sitemap.xml

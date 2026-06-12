@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild analytics.js --bundle --outfile=vercel-analytics.js --format=esm --minify",
+    "build": "esbuild analytics.js --bundle --outfile=vercel-analytics.js --format=esm --minify && node scripts/generate-seo.mjs && node scripts/ping-indexnow.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
