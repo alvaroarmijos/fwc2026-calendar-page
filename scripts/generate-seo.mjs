@@ -71,6 +71,73 @@ function matchName(match) {
   return match.matchLabel || match.phase;
 }
 
+function matchDescription(match) {
+  const name = matchName(match);
+  const group = match.group ? `, Group ${match.group}` : "";
+  return `${name} — ${match.phase}${group} at ${match.venue}. FIFA World Cup 2026.`;
+}
+
+function matchPerformers(match) {
+  if (match.home && match.away) {
+    return [
+      { "@type": "SportsTeam", name: match.home },
+      { "@type": "SportsTeam", name: match.away },
+    ];
+  }
+  return [{ "@type": "Organization", name: "FIFA World Cup 2026" }];
+}
+
+function toEndDate(dateUTC, timeUTC, durationHours = 2) {
+  const start = new Date(toIsoDate(dateUTC, timeUTC));
+  start.setUTCHours(start.getUTCHours() + durationHours);
+  return start.toISOString().replace(/\.\d{3}Z$/, "Z");
+}
+
+function eventOffers(siteUrl, startDate) {
+  return {
+    "@type": "Offer",
+    url: `${siteUrl}/`,
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    validFrom: startDate,
+  };
+}
+
+function buildMatchSportsEvent(match, siteUrl) {
+  const startDate = toIsoDate(match.dateUTC, match.timeUTC);
+  const imageUrl = `${siteUrl}/og-image.jpg`;
+  const event = {
+    "@type": "SportsEvent",
+    name: matchName(match),
+    description: matchDescription(match),
+    startDate,
+    endDate: toEndDate(match.dateUTC, match.timeUTC),
+    eventStatus: "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    image: imageUrl,
+    location: {
+      "@type": "Place",
+      name: match.venue.split(",")[0],
+      address: match.venue,
+    },
+    performer: matchPerformers(match),
+    organizer: {
+      "@type": "Organization",
+      name: "FIFA",
+      url: "https://www.fifa.com",
+    },
+    offers: eventOffers(siteUrl, startDate),
+  };
+  if (match.home && match.away) {
+    event.competitor = [
+      { "@type": "SportsTeam", name: match.home },
+      { "@type": "SportsTeam", name: match.away },
+    ];
+  }
+  return event;
+}
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -106,6 +173,7 @@ function uniqueVenues(matches) {
 
 function generateJsonLd(matches, siteUrl) {
   const venues = uniqueVenues(matches);
+  const imageUrl = `${siteUrl}/og-image.jpg`;
   const graph = [
     {
       "@type": "WebApplication",
@@ -125,10 +193,19 @@ function generateJsonLd(matches, siteUrl) {
       "@type": "SportsEvent",
       "@id": `${siteUrl}/#tournament`,
       name: "FIFA World Cup 2026",
-      startDate: "2026-06-11",
-      endDate: "2026-07-19",
+      description:
+        "FIFA World Cup 2026 hosted across the United States, Mexico, and Canada. 104 matches from group stage through the final.",
+      startDate: "2026-06-11T19:00:00Z",
+      endDate: "2026-07-19T23:00:00Z",
       eventStatus: "https://schema.org/EventScheduled",
       eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+      image: imageUrl,
+      performer: {
+        "@type": "Organization",
+        name: "FIFA",
+        url: "https://www.fifa.com",
+      },
+      offers: eventOffers(siteUrl, "2026-06-11T19:00:00Z"),
       location: venues.map((venue) => ({
         "@type": "Place",
         name: venue.split(",")[0],
@@ -148,25 +225,7 @@ function generateJsonLd(matches, siteUrl) {
       itemListElement: matches.map((match, index) => ({
         "@type": "ListItem",
         position: index + 1,
-        item: {
-          "@type": "SportsEvent",
-          name: matchName(match),
-          startDate: toIsoDate(match.dateUTC, match.timeUTC),
-          eventStatus: "https://schema.org/EventScheduled",
-          location: {
-            "@type": "Place",
-            name: match.venue.split(",")[0],
-            address: match.venue,
-          },
-          ...(match.home && match.away
-            ? {
-                competitor: [
-                  { "@type": "SportsTeam", name: match.home },
-                  { "@type": "SportsTeam", name: match.away },
-                ],
-              }
-            : {}),
-        },
+        item: buildMatchSportsEvent(match, siteUrl),
       })),
     },
   ];
